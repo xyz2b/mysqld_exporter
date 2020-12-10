@@ -56,11 +56,20 @@ var (
 	configMycnf = kingpin.Flag(
 		"config.my-cnf",
 		"Path to .my.cnf file to read MySQL credentials from.",
-	).Default(path.Join(os.Getenv("HOME"), ".my.cnf")).String()
+	).Default(path.Join(os.Getenv("HOME"), "./mysqld_exporter.cnf")).String()
 	tlsInsecureSkipVerify = kingpin.Flag(
 		"tls.insecure-skip-verify",
 		"Ignore certificate and server verification when using a tls connection.",
 	).Bool()
+	subsystemID = kingpin.Flag(
+		"config.subsystem-id",
+		"subsystem id of mysql, multi subsystem use . split",
+	).Default("").String()
+	subsystemName = kingpin.Flag(
+		"config.subsystem-name",
+		"subsystem name of mysql, multi subsystem use . split",
+	).Default("").String()
+	hostname string
 	dsn string
 )
 
@@ -119,6 +128,7 @@ func parseMycnf(config interface{}) (string, error) {
 	}
 	host := cfg.Section("client").Key("host").MustString("localhost")
 	port := cfg.Section("client").Key("port").MustUint(3306)
+	hostname = host + ":" + strconv.FormatUint(uint64(port), 10)
 	socket := cfg.Section("client").Key("socket").String()
 	if socket != "" {
 		dsn = fmt.Sprintf("%s:%s@unix(%s)/", user, password, socket)
@@ -213,6 +223,10 @@ func newHandler(metrics collector.Metrics, scrapers []collector.Scraper, logger 
 				}
 			}
 		}
+
+		ctx = context.WithValue(ctx, "subsystemID", *subsystemID)
+		ctx = context.WithValue(ctx, "subsystemName", *subsystemName)
+		ctx = context.WithValue(ctx, "hostname", hostname)
 
 		registry := prometheus.NewRegistry()
 		registry.MustRegister(collector.New(ctx, dsn, metrics, filteredScrapers, logger))

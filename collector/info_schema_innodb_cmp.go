@@ -31,28 +31,28 @@ const innodbCmpQuery = `
 
 // Metric descriptors.
 var (
-	infoSchemaInnodbCmpCompressOps = prometheus.NewDesc(
-		prometheus.BuildFQName(namespace, informationSchema, "innodb_cmp_compress_ops_total"),
+	infoSchemaInnodbCmpCompressOps = newDesc(
+		informationSchema, "innodb_cmp_compress_ops_total",
 		"Number of times a B-tree page of the size PAGE_SIZE has been compressed.",
 		[]string{"page_size"}, nil,
 	)
-	infoSchemaInnodbCmpCompressOpsOk = prometheus.NewDesc(
-		prometheus.BuildFQName(namespace, informationSchema, "innodb_cmp_compress_ops_ok_total"),
+	infoSchemaInnodbCmpCompressOpsOk = newDesc(
+		informationSchema, "innodb_cmp_compress_ops_ok_total",
 		"Number of times a B-tree page of the size PAGE_SIZE has been successfully compressed.",
 		[]string{"page_size"}, nil,
 	)
-	infoSchemaInnodbCmpCompressTime = prometheus.NewDesc(
-		prometheus.BuildFQName(namespace, informationSchema, "innodb_cmp_compress_time_seconds_total"),
+	infoSchemaInnodbCmpCompressTime = newDesc(
+		informationSchema, "innodb_cmp_compress_time_seconds_total",
 		"Total time in seconds spent in attempts to compress B-tree pages.",
 		[]string{"page_size"}, nil,
 	)
-	infoSchemaInnodbCmpUncompressOps = prometheus.NewDesc(
-		prometheus.BuildFQName(namespace, informationSchema, "innodb_cmp_uncompress_ops_total"),
+	infoSchemaInnodbCmpUncompressOps = newDesc(
+		informationSchema, "innodb_cmp_uncompress_ops_total",
 		"Number of times a B-tree page of the size PAGE_SIZE has been uncompressed.",
 		[]string{"page_size"}, nil,
 	)
-	infoSchemaInnodbCmpUncompressTime = prometheus.NewDesc(
-		prometheus.BuildFQName(namespace, informationSchema, "innodb_cmp_uncompress_time_seconds_total"),
+	infoSchemaInnodbCmpUncompressTime = newDesc(
+		informationSchema, "innodb_cmp_uncompress_time_seconds_total",
 		"Total time in seconds spent in uncompressing B-tree pages.",
 		[]string{"page_size"}, nil,
 	)
@@ -96,11 +96,11 @@ func (ScrapeInnodbCmp) Scrape(ctx context.Context, db *sql.DB, ch chan<- prometh
 			return err
 		}
 
-		ch <- prometheus.MustNewConstMetric(infoSchemaInnodbCmpCompressOps, prometheus.CounterValue, compress_ops, page_size)
-		ch <- prometheus.MustNewConstMetric(infoSchemaInnodbCmpCompressOpsOk, prometheus.CounterValue, compress_ops_ok, page_size)
-		ch <- prometheus.MustNewConstMetric(infoSchemaInnodbCmpCompressTime, prometheus.CounterValue, compress_time, page_size)
-		ch <- prometheus.MustNewConstMetric(infoSchemaInnodbCmpUncompressOps, prometheus.CounterValue, uncompress_ops, page_size)
-		ch <- prometheus.MustNewConstMetric(infoSchemaInnodbCmpUncompressTime, prometheus.CounterValue, uncompress_time, page_size)
+		ch <- mustNewConstMetric(&ctx, infoSchemaInnodbCmpCompressOps, prometheus.CounterValue, compress_ops, page_size)
+		ch <- mustNewConstMetric(&ctx, infoSchemaInnodbCmpCompressOpsOk, prometheus.CounterValue, compress_ops_ok, page_size)
+		ch <- mustNewConstMetric(&ctx, infoSchemaInnodbCmpCompressTime, prometheus.CounterValue, compress_time, page_size)
+		ch <- mustNewConstMetric(&ctx, infoSchemaInnodbCmpUncompressOps, prometheus.CounterValue, uncompress_ops, page_size)
+		ch <- mustNewConstMetric(&ctx, infoSchemaInnodbCmpUncompressTime, prometheus.CounterValue, uncompress_time, page_size)
 	}
 
 	return nil

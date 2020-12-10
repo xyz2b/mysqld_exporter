@@ -38,18 +38,18 @@ var (
 	}
 
 	infoSchemaQueryResponseTimeCountDescs = [3]*prometheus.Desc{
-		prometheus.NewDesc(
-			prometheus.BuildFQName(namespace, informationSchema, "query_response_time_seconds"),
+		newDesc(
+			informationSchema, "query_response_time_seconds",
 			"The number of all queries by duration they took to execute.",
 			[]string{}, nil,
 		),
-		prometheus.NewDesc(
-			prometheus.BuildFQName(namespace, informationSchema, "read_query_response_time_seconds"),
+		newDesc(
+			informationSchema, "read_query_response_time_seconds",
 			"The number of read queries by duration they took to execute.",
 			[]string{}, nil,
 		),
-		prometheus.NewDesc(
-			prometheus.BuildFQName(namespace, informationSchema, "write_query_response_time_seconds"),
+		newDesc(
+			informationSchema, "write_query_response_time_seconds",
 			"The number of write queries by duration they took to execute.",
 			[]string{}, nil,
 		),
@@ -94,8 +94,8 @@ func processQueryResponseTimeTable(ctx context.Context, db *sql.DB, ch chan<- pr
 		countBuckets[length] = histogramCnt
 	}
 	// Create histogram with query counts
-	ch <- prometheus.MustNewConstHistogram(
-		infoSchemaQueryResponseTimeCountDescs[i], histogramCnt, histogramSum, countBuckets,
+	ch <- mustNewConstHistogram (
+		&ctx, infoSchemaQueryResponseTimeCountDescs[i], histogramCnt, histogramSum, countBuckets,
 	)
 	return nil
 }

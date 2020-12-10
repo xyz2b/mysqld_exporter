@@ -43,18 +43,18 @@ var (
 
 // Metric descriptors.
 var (
-	performanceSchemaMemoryBytesAllocDesc = prometheus.NewDesc(
-		prometheus.BuildFQName(namespace, performanceSchema, "memory_events_alloc_bytes_total"),
+	performanceSchemaMemoryBytesAllocDesc = newDesc(
+		performanceSchema, "memory_events_alloc_bytes_total",
 		"The total number of bytes allocated by events.",
 		[]string{"event_name"}, nil,
 	)
-	performanceSchemaMemoryBytesFreeDesc = prometheus.NewDesc(
-		prometheus.BuildFQName(namespace, performanceSchema, "memory_events_free_bytes_total"),
+	performanceSchemaMemoryBytesFreeDesc = newDesc(
+		performanceSchema, "memory_events_free_bytes_total",
 		"The total number of bytes freed by events.",
 		[]string{"event_name"}, nil,
 	)
-	perforanceSchemaMemoryUsedBytesDesc = prometheus.NewDesc(
-		prometheus.BuildFQName(namespace, performanceSchema, "memory_events_used_bytes"),
+	perforanceSchemaMemoryUsedBytesDesc = newDesc(
+		performanceSchema, "memory_events_used_bytes",
 		"The number of bytes currently allocated by events.",
 		[]string{"event_name"}, nil,
 	)
@@ -101,13 +101,16 @@ func (ScrapePerfMemoryEvents) Scrape(ctx context.Context, db *sql.DB, ch chan<- 
 		}
 
 		eventName := strings.TrimPrefix(eventName, *performanceSchemaMemoryEventsRemovePrefix)
-		ch <- prometheus.MustNewConstMetric(
+		ch <- mustNewConstMetric(
+			&ctx,
 			performanceSchemaMemoryBytesAllocDesc, prometheus.CounterValue, float64(bytesAlloc), eventName,
 		)
-		ch <- prometheus.MustNewConstMetric(
+		ch <- mustNewConstMetric(
+			&ctx,
 			performanceSchemaMemoryBytesFreeDesc, prometheus.CounterValue, float64(bytesFree), eventName,
 		)
-		ch <- prometheus.MustNewConstMetric(
+		ch <- mustNewConstMetric(
+			&ctx,
 			perforanceSchemaMemoryUsedBytesDesc, prometheus.GaugeValue, float64(currentBytes), eventName,
 		)
 	}

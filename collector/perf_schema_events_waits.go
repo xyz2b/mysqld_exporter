@@ -30,13 +30,13 @@ const perfEventsWaitsQuery = `
 
 // Metric descriptors.
 var (
-	performanceSchemaEventsWaitsDesc = prometheus.NewDesc(
-		prometheus.BuildFQName(namespace, performanceSchema, "events_waits_total"),
+	performanceSchemaEventsWaitsDesc = newDesc(
+		performanceSchema, "events_waits_total",
 		"The total events waits by event name.",
 		[]string{"event_name"}, nil,
 	)
-	performanceSchemaEventsWaitsTimeDesc = prometheus.NewDesc(
-		prometheus.BuildFQName(namespace, performanceSchema, "events_waits_seconds_total"),
+	performanceSchemaEventsWaitsTimeDesc = newDesc(
+		performanceSchema, "events_waits_seconds_total",
 		"The total seconds of events waits by event name.",
 		[]string{"event_name"}, nil,
 	)
@@ -80,11 +80,13 @@ func (ScrapePerfEventsWaits) Scrape(ctx context.Context, db *sql.DB, ch chan<- p
 		); err != nil {
 			return err
 		}
-		ch <- prometheus.MustNewConstMetric(
+		ch <- mustNewConstMetric(
+			&ctx,
 			performanceSchemaEventsWaitsDesc, prometheus.CounterValue, float64(count),
 			eventName,
 		)
-		ch <- prometheus.MustNewConstMetric(
+		ch <- mustNewConstMetric(
+			&ctx,
 			performanceSchemaEventsWaitsTimeDesc, prometheus.CounterValue, float64(time)/picoSeconds,
 			eventName,
 		)

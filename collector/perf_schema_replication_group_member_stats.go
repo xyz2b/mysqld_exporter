@@ -34,28 +34,28 @@ var (
 		desc  *prometheus.Desc
 	}{
 		"COUNT_TRANSACTIONS_IN_QUEUE": {prometheus.GaugeValue,
-			prometheus.NewDesc(prometheus.BuildFQName(namespace, performanceSchema, "transactions_in_queue"),
+			newDesc(performanceSchema, "transactions_in_queue",
 				"The number of transactions in the queue pending conflict detection checks.", nil, nil)},
 		"COUNT_TRANSACTIONS_CHECKED": {prometheus.CounterValue,
-			prometheus.NewDesc(prometheus.BuildFQName(namespace, performanceSchema, "transactions_checked_total"),
+			newDesc(performanceSchema, "transactions_checked_total",
 				"The number of transactions that have been checked for conflicts.", nil, nil)},
 		"COUNT_CONFLICTS_DETECTED": {prometheus.CounterValue,
-			prometheus.NewDesc(prometheus.BuildFQName(namespace, performanceSchema, "conflicts_detected_total"),
+			newDesc(performanceSchema, "conflicts_detected_total",
 				"The number of transactions that have not passed the conflict detection check.", nil, nil)},
 		"COUNT_TRANSACTIONS_ROWS_VALIDATING": {prometheus.CounterValue,
-			prometheus.NewDesc(prometheus.BuildFQName(namespace, performanceSchema, "transactions_rows_validating_total"),
+			newDesc(performanceSchema, "transactions_rows_validating_total",
 				"Number of transaction rows which can be used for certification, but have not been garbage collected.", nil, nil)},
 		"COUNT_TRANSACTIONS_REMOTE_IN_APPLIER_QUEUE": {prometheus.GaugeValue,
-			prometheus.NewDesc(prometheus.BuildFQName(namespace, performanceSchema, "transactions_remote_in_applier_queue"),
+			newDesc(performanceSchema, "transactions_remote_in_applier_queue",
 				"The number of transactions that this member has received from the replication group which are waiting to be applied.", nil, nil)},
 		"COUNT_TRANSACTIONS_REMOTE_APPLIED": {prometheus.CounterValue,
-			prometheus.NewDesc(prometheus.BuildFQName(namespace, performanceSchema, "transactions_remote_applied_total"),
+			newDesc(performanceSchema, "transactions_remote_applied_total",
 				"Number of transactions this member has received from the group and applied.", nil, nil)},
 		"COUNT_TRANSACTIONS_LOCAL_PROPOSED": {prometheus.CounterValue,
-			prometheus.NewDesc(prometheus.BuildFQName(namespace, performanceSchema, "transactions_local_proposed_total"),
+			newDesc(performanceSchema, "transactions_local_proposed_total",
 				"Number of transactions which originated on this member and were sent to the group.", nil, nil)},
 		"COUNT_TRANSACTIONS_LOCAL_ROLLBACK": {prometheus.CounterValue,
-			prometheus.NewDesc(prometheus.BuildFQName(namespace, performanceSchema, "transactions_local_rollback_total"),
+			newDesc(performanceSchema, "transactions_local_rollback_total",
 				"Number of transactions which originated on this member and were rolled back by the group.", nil, nil)},
 	}
 )
@@ -107,7 +107,7 @@ func (ScrapePerfReplicationGroupMemberStats) Scrape(ctx context.Context, db *sql
 				if err != nil {
 					return err
 				}
-				ch <- prometheus.MustNewConstMetric(metric.desc, metric.vtype, value)
+				ch <- mustNewConstMetric(&ctx, metric.desc, metric.vtype, value)
 			}
 		}
 	}

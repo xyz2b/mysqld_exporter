@@ -59,20 +59,20 @@ var (
 
 // Metric descriptors.
 var (
-	processlistCountDesc = prometheus.NewDesc(
-		prometheus.BuildFQName(namespace, informationSchema, "threads"),
+	processlistCountDesc = newDesc(
+		informationSchema, "threads",
 		"The number of threads (connections) split by current state.",
 		[]string{"state"}, nil)
-	processlistTimeDesc = prometheus.NewDesc(
-		prometheus.BuildFQName(namespace, informationSchema, "threads_seconds"),
+	processlistTimeDesc = newDesc(
+		informationSchema, "threads_seconds",
 		"The number of seconds threads (connections) have used split by current state.",
 		[]string{"state"}, nil)
-	processesByUserDesc = prometheus.NewDesc(
-		prometheus.BuildFQName(namespace, informationSchema, "processes_by_user"),
+	processesByUserDesc = newDesc(
+		informationSchema, "processes_by_user",
 		"The number of processes by user.",
 		[]string{"mysql_user"}, nil)
-	processesByHostDesc = prometheus.NewDesc(
-		prometheus.BuildFQName(namespace, informationSchema, "processes_by_host"),
+	processesByHostDesc = newDesc(
+		informationSchema, "processes_by_host",
 		"The number of processes by host.",
 		[]string{"client_host"}, nil)
 )
@@ -219,21 +219,21 @@ func (ScrapeProcesslist) Scrape(ctx context.Context, db *sql.DB, ch chan<- prome
 
 	if *processesByHostFlag {
 		for host, processes := range hostCount {
-			ch <- prometheus.MustNewConstMetric(processesByHostDesc, prometheus.GaugeValue, float64(processes), host)
+			ch <- mustNewConstMetric(&ctx, processesByHostDesc, prometheus.GaugeValue, float64(processes), host)
 		}
 	}
 
 	if *processesByUserFlag {
 		for user, processes := range userCount {
-			ch <- prometheus.MustNewConstMetric(processesByUserDesc, prometheus.GaugeValue, float64(processes), user)
+			ch <- mustNewConstMetric(&ctx, processesByUserDesc, prometheus.GaugeValue, float64(processes), user)
 		}
 	}
 
 	for state, processes := range stateCounts {
-		ch <- prometheus.MustNewConstMetric(processlistCountDesc, prometheus.GaugeValue, float64(processes), state)
+		ch <- mustNewConstMetric(&ctx, processlistCountDesc, prometheus.GaugeValue, float64(processes), state)
 	}
 	for state, time := range stateTime {
-		ch <- prometheus.MustNewConstMetric(processlistTimeDesc, prometheus.GaugeValue, float64(time), state)
+		ch <- mustNewConstMetric(&ctx, processlistTimeDesc, prometheus.GaugeValue, float64(time), state)
 	}
 
 	return nil

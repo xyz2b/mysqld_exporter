@@ -31,23 +31,23 @@ const innodbCmpMemQuery = `
 
 // Metric descriptors.
 var (
-	infoSchemaInnodbCmpMemPagesRead = prometheus.NewDesc(
-		prometheus.BuildFQName(namespace, informationSchema, "innodb_cmpmem_pages_used_total"),
+	infoSchemaInnodbCmpMemPagesRead = newDesc(
+		informationSchema, "innodb_cmpmem_pages_used_total",
 		"Number of blocks of the size PAGE_SIZE that are currently in use.",
 		[]string{"page_size", "buffer_pool"}, nil,
 	)
-	infoSchemaInnodbCmpMemPagesFree = prometheus.NewDesc(
-		prometheus.BuildFQName(namespace, informationSchema, "innodb_cmpmem_pages_free_total"),
+	infoSchemaInnodbCmpMemPagesFree = newDesc(
+		informationSchema, "innodb_cmpmem_pages_free_total",
 		"Number of blocks of the size PAGE_SIZE that are currently available for allocation.",
 		[]string{"page_size", "buffer_pool"}, nil,
 	)
-	infoSchemaInnodbCmpMemRelocationOps = prometheus.NewDesc(
-		prometheus.BuildFQName(namespace, informationSchema, "innodb_cmpmem_relocation_ops_total"),
+	infoSchemaInnodbCmpMemRelocationOps = newDesc(
+		informationSchema, "innodb_cmpmem_relocation_ops_total",
 		"Number of times a block of the size PAGE_SIZE has been relocated.",
 		[]string{"page_size", "buffer_pool"}, nil,
 	)
-	infoSchemaInnodbCmpMemRelocationTime = prometheus.NewDesc(
-		prometheus.BuildFQName(namespace, informationSchema, "innodb_cmpmem_relocation_time_seconds_total"),
+	infoSchemaInnodbCmpMemRelocationTime = newDesc(
+		informationSchema, "innodb_cmpmem_relocation_time_seconds_total",
 		"Total time in seconds spent in relocating blocks.",
 		[]string{"page_size", "buffer_pool"}, nil,
 	)
@@ -91,10 +91,10 @@ func (ScrapeInnodbCmpMem) Scrape(ctx context.Context, db *sql.DB, ch chan<- prom
 			return err
 		}
 
-		ch <- prometheus.MustNewConstMetric(infoSchemaInnodbCmpMemPagesRead, prometheus.CounterValue, pages_used, page_size, buffer_pool)
-		ch <- prometheus.MustNewConstMetric(infoSchemaInnodbCmpMemPagesFree, prometheus.CounterValue, pages_free, page_size, buffer_pool)
-		ch <- prometheus.MustNewConstMetric(infoSchemaInnodbCmpMemRelocationOps, prometheus.CounterValue, relocation_ops, page_size, buffer_pool)
-		ch <- prometheus.MustNewConstMetric(infoSchemaInnodbCmpMemRelocationTime, prometheus.CounterValue, (relocation_time / 1000), page_size, buffer_pool)
+		ch <- mustNewConstMetric(&ctx, infoSchemaInnodbCmpMemPagesRead, prometheus.CounterValue, pages_used, page_size, buffer_pool)
+		ch <- mustNewConstMetric(&ctx, infoSchemaInnodbCmpMemPagesFree, prometheus.CounterValue, pages_free, page_size, buffer_pool)
+		ch <- mustNewConstMetric(&ctx, infoSchemaInnodbCmpMemRelocationOps, prometheus.CounterValue, relocation_ops, page_size, buffer_pool)
+		ch <- mustNewConstMetric(&ctx, infoSchemaInnodbCmpMemRelocationTime, prometheus.CounterValue, (relocation_time / 1000), page_size, buffer_pool)
 	}
 	return nil
 }

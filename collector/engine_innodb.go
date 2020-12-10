@@ -75,21 +75,24 @@ func (ScrapeEngineInnodbStatus) Scrape(ctx context.Context, db *sql.DB, ch chan<
 	for _, line := range strings.Split(statusCol, "\n") {
 		if data := rQueries.FindStringSubmatch(line); data != nil {
 			value, _ := strconv.ParseFloat(data[1], 64)
-			ch <- prometheus.MustNewConstMetric(
-				newDesc(innodb, "queries_inside_innodb", "Queries inside InnoDB."),
+			ch <- mustNewConstMetric(
+				&ctx,
+				newDesc(innodb, "queries_inside_innodb", "Queries inside InnoDB.", nil, nil),
 				prometheus.GaugeValue,
 				value,
 			)
 			value, _ = strconv.ParseFloat(data[2], 64)
-			ch <- prometheus.MustNewConstMetric(
-				newDesc(innodb, "queries_in_queue", "Queries in queue."),
+			ch <- mustNewConstMetric(
+				&ctx,
+				newDesc(innodb, "queries_in_queue", "Queries in queue.", nil, nil),
 				prometheus.GaugeValue,
 				value,
 			)
 		} else if data := rViews.FindStringSubmatch(line); data != nil {
 			value, _ := strconv.ParseFloat(data[1], 64)
-			ch <- prometheus.MustNewConstMetric(
-				newDesc(innodb, "read_views_open_inside_innodb", "Read views open inside InnoDB."),
+			ch <- mustNewConstMetric(
+				&ctx,
+				newDesc(innodb, "read_views_open_inside_innodb", "Read views open inside InnoDB.", nil, nil),
 				prometheus.GaugeValue,
 				value,
 			)

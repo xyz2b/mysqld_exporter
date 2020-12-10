@@ -53,23 +53,23 @@ const perfTableLockWaitsQuery = `
 
 // Metric descriptors.
 var (
-	performanceSchemaSQLTableLockWaitsDesc = prometheus.NewDesc(
-		prometheus.BuildFQName(namespace, performanceSchema, "sql_lock_waits_total"),
+	performanceSchemaSQLTableLockWaitsDesc = newDesc(
+		performanceSchema, "sql_lock_waits_total",
 		"The total number of SQL lock wait events for each table and operation.",
 		[]string{"schema", "name", "operation"}, nil,
 	)
-	performanceSchemaExternalTableLockWaitsDesc = prometheus.NewDesc(
-		prometheus.BuildFQName(namespace, performanceSchema, "external_lock_waits_total"),
+	performanceSchemaExternalTableLockWaitsDesc = newDesc(
+		performanceSchema, "external_lock_waits_total",
 		"The total number of external lock wait events for each table and operation.",
 		[]string{"schema", "name", "operation"}, nil,
 	)
-	performanceSchemaSQLTableLockWaitsTimeDesc = prometheus.NewDesc(
-		prometheus.BuildFQName(namespace, performanceSchema, "sql_lock_waits_seconds_total"),
+	performanceSchemaSQLTableLockWaitsTimeDesc = newDesc(
+		performanceSchema, "sql_lock_waits_seconds_total",
 		"The total time of SQL lock wait events for each table and operation.",
 		[]string{"schema", "name", "operation"}, nil,
 	)
-	performanceSchemaExternalTableLockWaitsTimeDesc = prometheus.NewDesc(
-		prometheus.BuildFQName(namespace, performanceSchema, "external_lock_waits_seconds_total"),
+	performanceSchemaExternalTableLockWaitsTimeDesc = newDesc(
+		performanceSchema, "external_lock_waits_seconds_total",
 		"The total time of external lock wait events for each table and operation.",
 		[]string{"schema", "name", "operation"}, nil,
 	)
@@ -153,83 +153,103 @@ func (ScrapePerfTableLockWaits) Scrape(ctx context.Context, db *sql.DB, ch chan<
 		); err != nil {
 			return err
 		}
-		ch <- prometheus.MustNewConstMetric(
+		ch <- mustNewConstMetric(
+			&ctx,
 			performanceSchemaSQLTableLockWaitsDesc, prometheus.CounterValue, float64(countReadNormal),
 			objectSchema, objectName, "read_normal",
 		)
-		ch <- prometheus.MustNewConstMetric(
+		ch <- mustNewConstMetric(
+			&ctx,
 			performanceSchemaSQLTableLockWaitsDesc, prometheus.CounterValue, float64(countReadWithSharedLocks),
 			objectSchema, objectName, "read_with_shared_locks",
 		)
-		ch <- prometheus.MustNewConstMetric(
+		ch <- mustNewConstMetric(
+			&ctx,
 			performanceSchemaSQLTableLockWaitsDesc, prometheus.CounterValue, float64(countReadHighPriority),
 			objectSchema, objectName, "read_high_priority",
 		)
-		ch <- prometheus.MustNewConstMetric(
+		ch <- mustNewConstMetric(
+			&ctx,
 			performanceSchemaSQLTableLockWaitsDesc, prometheus.CounterValue, float64(countReadNoInsert),
 			objectSchema, objectName, "read_no_insert",
 		)
-		ch <- prometheus.MustNewConstMetric(
+		ch <- mustNewConstMetric(
+			&ctx,
 			performanceSchemaSQLTableLockWaitsDesc, prometheus.CounterValue, float64(countWriteNormal),
 			objectSchema, objectName, "write_normal",
 		)
-		ch <- prometheus.MustNewConstMetric(
+		ch <- mustNewConstMetric(
+			&ctx,
 			performanceSchemaSQLTableLockWaitsDesc, prometheus.CounterValue, float64(countWriteAllowWrite),
 			objectSchema, objectName, "write_allow_write",
 		)
-		ch <- prometheus.MustNewConstMetric(
+		ch <- mustNewConstMetric(
+			&ctx,
 			performanceSchemaSQLTableLockWaitsDesc, prometheus.CounterValue, float64(countWriteConcurrentInsert),
 			objectSchema, objectName, "write_concurrent_insert",
 		)
-		ch <- prometheus.MustNewConstMetric(
+		ch <- mustNewConstMetric(
+			&ctx,
 			performanceSchemaSQLTableLockWaitsDesc, prometheus.CounterValue, float64(countWriteLowPriority),
 			objectSchema, objectName, "write_low_priority",
 		)
-		ch <- prometheus.MustNewConstMetric(
+		ch <- mustNewConstMetric(
+			&ctx,
 			performanceSchemaExternalTableLockWaitsDesc, prometheus.CounterValue, float64(countReadExternal),
 			objectSchema, objectName, "read",
 		)
-		ch <- prometheus.MustNewConstMetric(
+		ch <- mustNewConstMetric(
+			&ctx,
 			performanceSchemaExternalTableLockWaitsDesc, prometheus.CounterValue, float64(countWriteExternal),
 			objectSchema, objectName, "write",
 		)
-		ch <- prometheus.MustNewConstMetric(
+		ch <- mustNewConstMetric(
+			&ctx,
 			performanceSchemaSQLTableLockWaitsTimeDesc, prometheus.CounterValue, float64(timeReadNormal)/picoSeconds,
 			objectSchema, objectName, "read_normal",
 		)
-		ch <- prometheus.MustNewConstMetric(
+		ch <- mustNewConstMetric(
+			&ctx,
 			performanceSchemaSQLTableLockWaitsTimeDesc, prometheus.CounterValue, float64(timeReadWithSharedLocks)/picoSeconds,
 			objectSchema, objectName, "read_with_shared_locks",
 		)
-		ch <- prometheus.MustNewConstMetric(
+		ch <- mustNewConstMetric(
+			&ctx,
 			performanceSchemaSQLTableLockWaitsTimeDesc, prometheus.CounterValue, float64(timeReadHighPriority)/picoSeconds,
 			objectSchema, objectName, "read_high_priority",
 		)
-		ch <- prometheus.MustNewConstMetric(
+		ch <- mustNewConstMetric(
+			&ctx,
 			performanceSchemaSQLTableLockWaitsTimeDesc, prometheus.CounterValue, float64(timeReadNoInsert)/picoSeconds,
 			objectSchema, objectName, "read_no_insert",
 		)
-		ch <- prometheus.MustNewConstMetric(
+		ch <- mustNewConstMetric(
+			&ctx,
 			performanceSchemaSQLTableLockWaitsTimeDesc, prometheus.CounterValue, float64(timeWriteNormal)/picoSeconds,
 			objectSchema, objectName, "write_normal",
 		)
-		ch <- prometheus.MustNewConstMetric(
+		ch <- mustNewConstMetric(
+			&ctx,
 			performanceSchemaSQLTableLockWaitsTimeDesc, prometheus.CounterValue, float64(timeWriteAllowWrite)/picoSeconds,
 			objectSchema, objectName, "write_allow_write",
 		)
-		ch <- prometheus.MustNewConstMetric(
+		ch <- mustNewConstMetric(
+			&ctx,
 			performanceSchemaSQLTableLockWaitsTimeDesc, prometheus.CounterValue, float64(timeWriteConcurrentInsert)/picoSeconds,
 			objectSchema, objectName, "write_concurrent_insert",
 		)
-		ch <- prometheus.MustNewConstMetric(
+		ch <- mustNewConstMetric(
+			&ctx,
 			performanceSchemaSQLTableLockWaitsTimeDesc, prometheus.CounterValue, float64(timeWriteLowPriority)/picoSeconds,
 			objectSchema, objectName, "write_low_priority",
 		)
-		ch <- prometheus.MustNewConstMetric(
+		ch <- mustNewConstMetric(
+			&ctx,
 			performanceSchemaExternalTableLockWaitsTimeDesc, prometheus.CounterValue, float64(timeReadExternal)/picoSeconds,
 			objectSchema, objectName, "read",
 		)
-		ch <- prometheus.MustNewConstMetric(
+		ch <- mustNewConstMetric(
+			&ctx,
 			performanceSchemaExternalTableLockWaitsTimeDesc, prometheus.CounterValue, float64(timeWriteExternal)/picoSeconds,
 			objectSchema, objectName, "write",
 		)

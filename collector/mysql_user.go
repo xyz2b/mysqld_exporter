@@ -80,20 +80,20 @@ var (
 
 // Metric descriptors.
 var (
-	userMaxQuestionsDesc = prometheus.NewDesc(
-		prometheus.BuildFQName(namespace, mysql, "max_questions"),
+	userMaxQuestionsDesc = newDesc(
+		mysql, "max_questions",
 		"The number of max_questions by user.",
 		labelNames, nil)
-	userMaxUpdatesDesc = prometheus.NewDesc(
-		prometheus.BuildFQName(namespace, mysql, "max_updates"),
+	userMaxUpdatesDesc = newDesc(
+		mysql, "max_updates",
 		"The number of max_updates by user.",
 		labelNames, nil)
-	userMaxConnectionsDesc = prometheus.NewDesc(
-		prometheus.BuildFQName(namespace, mysql, "max_connections"),
+	userMaxConnectionsDesc = newDesc(
+		mysql, "max_connections",
 		"The number of max_connections by user.",
 		labelNames, nil)
-	userMaxUserConnectionsDesc = prometheus.NewDesc(
-		prometheus.BuildFQName(namespace, mysql, "max_user_connections"),
+	userMaxUserConnectionsDesc = newDesc(
+		mysql, "max_user_connections",
 		"The number of max_user_connections by user.",
 		labelNames, nil)
 )
@@ -227,9 +227,10 @@ func (ScrapeUser) Scrape(ctx context.Context, db *sql.DB, ch chan<- prometheus.M
 
 			for i, col := range userCols {
 				if value, ok := parsePrivilege(*scanArgs[i].(*sql.RawBytes)); ok { // Silently skip unparsable values.
-					ch <- prometheus.MustNewConstMetric(
-						prometheus.NewDesc(
-							prometheus.BuildFQName(namespace, mysql, strings.ToLower(col)),
+					ch <- mustNewConstMetric(
+						&ctx,
+						newDesc(
+							mysql, strings.ToLower(col),
 							col+" by user.",
 							labelNames,
 							nil,
@@ -242,10 +243,10 @@ func (ScrapeUser) Scrape(ctx context.Context, db *sql.DB, ch chan<- prometheus.M
 			}
 		}
 
-		ch <- prometheus.MustNewConstMetric(userMaxQuestionsDesc, prometheus.GaugeValue, float64(max_questions), user, host)
-		ch <- prometheus.MustNewConstMetric(userMaxUpdatesDesc, prometheus.GaugeValue, float64(max_updates), user, host)
-		ch <- prometheus.MustNewConstMetric(userMaxConnectionsDesc, prometheus.GaugeValue, float64(max_connections), user, host)
-		ch <- prometheus.MustNewConstMetric(userMaxUserConnectionsDesc, prometheus.GaugeValue, float64(max_user_connections), user, host)
+		ch <- mustNewConstMetric(&ctx, userMaxQuestionsDesc, prometheus.GaugeValue, float64(max_questions), user, host)
+		ch <- mustNewConstMetric(&ctx, userMaxUpdatesDesc, prometheus.GaugeValue, float64(max_updates), user, host)
+		ch <- mustNewConstMetric(&ctx, userMaxConnectionsDesc, prometheus.GaugeValue, float64(max_connections), user, host)
+		ch <- mustNewConstMetric(&ctx, userMaxUserConnectionsDesc, prometheus.GaugeValue, float64(max_user_connections), user, host)
 	}
 
 	return nil

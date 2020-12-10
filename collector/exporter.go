@@ -64,8 +64,8 @@ var (
 
 // Metric descriptors.
 var (
-	scrapeDurationDesc = prometheus.NewDesc(
-		prometheus.BuildFQName(namespace, exporter, "collector_duration_seconds"),
+	scrapeDurationDesc = newDesc(
+		exporter, "collector_duration_seconds",
 		"Collector time duration.",
 		[]string{"collector"}, nil,
 	)
@@ -110,31 +110,32 @@ func New(ctx context.Context, dsn string, metrics Metrics, scrapers []Scraper, l
 
 // Describe implements prometheus.Collector.
 func (e *Exporter) Describe(ch chan<- *prometheus.Desc) {
-	ch <- e.metrics.TotalScrapes.Desc()
-	ch <- e.metrics.Error.Desc()
+	e.metrics.TotalScrapes.Describe(ch)
+	e.metrics.Error.Describe(ch)
 	e.metrics.ScrapeErrors.Describe(ch)
-	ch <- e.metrics.MySQLUp.Desc()
+	e.metrics.MySQLUp.Describe(ch)
 }
 
 // Collect implements prometheus.Collector.
 func (e *Exporter) Collect(ch chan<- prometheus.Metric) {
 	e.scrape(e.ctx, ch)
 
-	ch <- e.metrics.TotalScrapes
-	ch <- e.metrics.Error
+	e.metrics.TotalScrapes.Collect(ch)
+	e.metrics.Error.Collect(ch)
 	e.metrics.ScrapeErrors.Collect(ch)
-	ch <- e.metrics.MySQLUp
+	e.metrics.MySQLUp.Collect(ch)
 }
 
 func (e *Exporter) scrape(ctx context.Context, ch chan<- prometheus.Metric) {
-	e.metrics.TotalScrapes.Inc()
+	counterVecWithLabelValues(e.metrics.TotalScrapes).Inc()
+
 	var err error
 
 	scrapeTime := time.Now()
 	db, err := sql.Open("mysql", e.dsn)
 	if err != nil {
 		level.Error(e.logger).Log("msg", "Error opening connection to database", "err", err)
-		e.metrics.Error.Set(1)
+		gaugeVecWithLabelValues(e.metrics.Error).Set(1)
 		return
 	}
 	defer db.Close()
@@ -147,15 +148,15 @@ func (e *Exporter) scrape(ctx context.Context, ch chan<- prometheus.Metric) {
 
 	if err := db.PingContext(ctx); err != nil {
 		level.Error(e.logger).Log("msg", "Error pinging mysqld", "err", err)
-		e.metrics.MySQLUp.Set(0)
-		e.metrics.Error.Set(1)
+		gaugeVecWithLabelValues(e.metrics.MySQLUp).Set(0)
+		gaugeVecWithLabelValues(e.metrics.Error).Set(1)
 		return
 	}
 
-	e.metrics.MySQLUp.Set(1)
-	e.metrics.Error.Set(0)
+	gaugeVecWithLabelValues(e.metrics.MySQLUp).Set(1)
+	gaugeVecWithLabelValues(e.metrics.Error).Set(0)
 
-	ch <- prometheus.MustNewConstMetric(scrapeDurationDesc, prometheus.GaugeValue, time.Since(scrapeTime).Seconds(), "connection")
+	ch <- mustNewConstMetric(&ctx, scrapeDurationDesc, prometheus.GaugeValue, time.Since(scrapeTime).Seconds(), "connection")
 
 	version := getMySQLVersion(db, e.logger)
 	var wg sync.WaitGroup
@@ -172,10 +173,10 @@ func (e *Exporter) scrape(ctx context.Context, ch chan<- prometheus.Metric) {
 			scrapeTime := time.Now()
 			if err := scraper.Scrape(ctx, db, ch, log.With(e.logger, "scraper", scraper.Name())); err != nil {
 				level.Error(e.logger).Log("msg", "Error from scraper", "scraper", scraper.Name(), "err", err)
-				e.metrics.ScrapeErrors.WithLabelValues(label).Inc()
-				e.metrics.Error.Set(1)
+				counterVecWithLabelValues(e.metrics.ScrapeErrors, label).Inc()
+				gaugeVecWithLabelValues(e.metrics.Error).Set(1)
 			}
-			ch <- prometheus.MustNewConstMetric(scrapeDurationDesc, prometheus.GaugeValue, time.Since(scrapeTime).Seconds(), label)
+			ch <- mustNewConstMetric(&ctx, scrapeDurationDesc, prometheus.GaugeValue, time.Since(scrapeTime).Seconds(), label)
 		}(scraper)
 	}
 }
@@ -198,38 +199,38 @@ func getMySQLVersion(db *sql.DB, logger log.Logger) float64 {
 
 // Metrics represents exporter metrics which values can be carried between http requests.
 type Metrics struct {
-	TotalScrapes prometheus.Counter
+	TotalScrapes *prometheus.CounterVec
 	ScrapeErrors *prometheus.CounterVec
-	Error        prometheus.Gauge
-	MySQLUp      prometheus.Gauge
+	Error        *prometheus.GaugeVec
+	MySQLUp      *prometheus.GaugeVec
 }
 
 // NewMetrics creates new Metrics instance.
 func NewMetrics() Metrics {
 	subsystem := exporter
 	return Metrics{
-		TotalScrapes: prometheus.NewCounter(prometheus.CounterOpts{
+		TotalScrapes: newCounterVec(prometheus.CounterOpts{
 			Namespace: namespace,
 			Subsystem: subsystem,
 			Name:      "scrapes_total",
 			Help:      "Total number of times MySQL was scraped for metrics.",
-		}),
-		ScrapeErrors: prometheus.NewCounterVec(prometheus.CounterOpts{
+		}, nil),
+		ScrapeErrors: newCounterVec(prometheus.CounterOpts{
 			Namespace: namespace,
 			Subsystem: subsystem,
 			Name:      "scrape_errors_total",
 			Help:      "Total number of times an error occurred scraping a MySQL.",
 		}, []string{"collector"}),
-		Error: prometheus.NewGauge(prometheus.GaugeOpts{
+		Error: newGaugeVec(prometheus.GaugeOpts{
 			Namespace: namespace,
 			Subsystem: subsystem,
 			Name:      "last_scrape_error",
 			Help:      "Whether the last scrape of metrics from MySQL resulted in an error (1 for error, 0 for success).",
-		}),
-		MySQLUp: prometheus.NewGauge(prometheus.GaugeOpts{
+		}, nil),
+		MySQLUp: newGaugeVec(prometheus.GaugeOpts{
 			Namespace: namespace,
 			Name:      "up",
 			Help:      "Whether the MySQL server is up.",
-		}),
+		}, nil),
 	}
 }

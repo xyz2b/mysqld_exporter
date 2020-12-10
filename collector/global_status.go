@@ -36,45 +36,45 @@ const (
 // Regexp to match various groups of status vars.
 var globalStatusRE = regexp.MustCompile(`^(com|handler|connection_errors|innodb_buffer_pool_pages|innodb_rows|performance_schema)_(.*)$`)
 
-// Metric descriptors.
+// Metric descriptors.n
 var (
-	globalCommandsDesc = prometheus.NewDesc(
-		prometheus.BuildFQName(namespace, globalStatus, "commands_total"),
+	globalCommandsDesc = newDesc(
+		globalStatus, "commands_total",
 		"Total number of executed MySQL commands.",
 		[]string{"command"}, nil,
 	)
-	globalHandlerDesc = prometheus.NewDesc(
-		prometheus.BuildFQName(namespace, globalStatus, "handlers_total"),
+	globalHandlerDesc = newDesc(
+		globalStatus, "handlers_total",
 		"Total number of executed MySQL handlers.",
 		[]string{"handler"}, nil,
 	)
-	globalConnectionErrorsDesc = prometheus.NewDesc(
-		prometheus.BuildFQName(namespace, globalStatus, "connection_errors_total"),
+	globalConnectionErrorsDesc = newDesc(
+		globalStatus, "connection_errors_total",
 		"Total number of MySQL connection errors.",
 		[]string{"error"}, nil,
 	)
-	globalBufferPoolPagesDesc = prometheus.NewDesc(
-		prometheus.BuildFQName(namespace, globalStatus, "buffer_pool_pages"),
+	globalBufferPoolPagesDesc = newDesc(
+		globalStatus, "buffer_pool_pages",
 		"Innodb buffer pool pages by state.",
 		[]string{"state"}, nil,
 	)
-	globalBufferPoolDirtyPagesDesc = prometheus.NewDesc(
-		prometheus.BuildFQName(namespace, globalStatus, "buffer_pool_dirty_pages"),
+	globalBufferPoolDirtyPagesDesc = newDesc(
+		globalStatus, "buffer_pool_dirty_pages",
 		"Innodb buffer pool dirty pages.",
-		[]string{}, nil,
+		nil, nil,
 	)
-	globalBufferPoolPageChangesDesc = prometheus.NewDesc(
-		prometheus.BuildFQName(namespace, globalStatus, "buffer_pool_page_changes_total"),
+	globalBufferPoolPageChangesDesc = newDesc(
+		globalStatus, "buffer_pool_page_changes_total",
 		"Innodb buffer pool page state changes.",
 		[]string{"operation"}, nil,
 	)
-	globalInnoDBRowOpsDesc = prometheus.NewDesc(
-		prometheus.BuildFQName(namespace, globalStatus, "innodb_row_ops_total"),
+	globalInnoDBRowOpsDesc = newDesc(
+		globalStatus, "innodb_row_ops_total",
 		"Total number of MySQL InnoDB row operations.",
 		[]string{"operation"}, nil,
 	)
-	globalPerformanceSchemaLostDesc = prometheus.NewDesc(
-		prometheus.BuildFQName(namespace, globalStatus, "performance_schema_lost_total"),
+	globalPerformanceSchemaLostDesc = newDesc(
+		globalStatus, "performance_schema_lost_total",
 		"Total number of MySQL instrumentations that could not be loaded or created due to memory constraints.",
 		[]string{"instrumentation"}, nil,
 	)
@@ -123,8 +123,9 @@ func (ScrapeGlobalStatus) Scrape(ctx context.Context, db *sql.DB, ch chan<- prom
 			key = validPrometheusName(key)
 			match := globalStatusRE.FindStringSubmatch(key)
 			if match == nil {
-				ch <- prometheus.MustNewConstMetric(
-					newDesc(globalStatus, key, "Generic metric from SHOW GLOBAL STATUS."),
+				ch <- mustNewConstMetric(
+					&ctx,
+					newDesc(globalStatus, key, "Generic metric from SHOW GLOBAL STATUS.", nil, nil),
 					prometheus.UntypedValue,
 					floatVal,
 				)
@@ -132,41 +133,41 @@ func (ScrapeGlobalStatus) Scrape(ctx context.Context, db *sql.DB, ch chan<- prom
 			}
 			switch match[1] {
 			case "com":
-				ch <- prometheus.MustNewConstMetric(
-					globalCommandsDesc, prometheus.CounterValue, floatVal, match[2],
+				ch <- mustNewConstMetric(
+					&ctx, globalCommandsDesc, prometheus.CounterValue, floatVal, match[2],
 				)
 			case "handler":
-				ch <- prometheus.MustNewConstMetric(
-					globalHandlerDesc, prometheus.CounterValue, floatVal, match[2],
+				ch <- mustNewConstMetric(
+					&ctx, globalHandlerDesc, prometheus.CounterValue, floatVal, match[2],
 				)
 			case "connection_errors":
-				ch <- prometheus.MustNewConstMetric(
-					globalConnectionErrorsDesc, prometheus.CounterValue, floatVal, match[2],
+				ch <- mustNewConstMetric(
+					&ctx, globalConnectionErrorsDesc, prometheus.CounterValue, floatVal, match[2],
 				)
 			case "innodb_buffer_pool_pages":
 				switch match[2] {
 				case "data", "free", "misc", "old":
-					ch <- prometheus.MustNewConstMetric(
-						globalBufferPoolPagesDesc, prometheus.GaugeValue, floatVal, match[2],
+					ch <- mustNewConstMetric(
+						&ctx, globalBufferPoolPagesDesc, prometheus.GaugeValue, floatVal, match[2],
 					)
 				case "dirty":
-					ch <- prometheus.MustNewConstMetric(
-						globalBufferPoolDirtyPagesDesc, prometheus.GaugeValue, floatVal,
+					ch <- mustNewConstMetric(
+						&ctx, globalBufferPoolDirtyPagesDesc, prometheus.GaugeValue, floatVal,
 					)
 				case "total":
 					continue
 				default:
-					ch <- prometheus.MustNewConstMetric(
-						globalBufferPoolPageChangesDesc, prometheus.CounterValue, floatVal, match[2],
+					ch <- mustNewConstMetric(
+						&ctx, globalBufferPoolPageChangesDesc, prometheus.CounterValue, floatVal, match[2],
 					)
 				}
 			case "innodb_rows":
-				ch <- prometheus.MustNewConstMetric(
-					globalInnoDBRowOpsDesc, prometheus.CounterValue, floatVal, match[2],
+				ch <- mustNewConstMetric(
+					&ctx, globalInnoDBRowOpsDesc, prometheus.CounterValue, floatVal, match[2],
 				)
 			case "performance_schema":
-				ch <- prometheus.MustNewConstMetric(
-					globalPerformanceSchemaLostDesc, prometheus.CounterValue, floatVal, match[2],
+				ch <- mustNewConstMetric(
+					&ctx, globalPerformanceSchemaLostDesc, prometheus.CounterValue, floatVal, match[2],
 				)
 			}
 		} else if _, ok := textItems[key]; ok {
@@ -176,8 +177,9 @@ func (ScrapeGlobalStatus) Scrape(ctx context.Context, db *sql.DB, ch chan<- prom
 
 	// mysql_galera_variables_info metric.
 	if textItems["wsrep_local_state_uuid"] != "" {
-		ch <- prometheus.MustNewConstMetric(
-			prometheus.NewDesc(prometheus.BuildFQName(namespace, "galera", "status_info"), "PXC/Galera status information.",
+		ch <- mustNewConstMetric(
+			&ctx,
+			newDesc("galera", "status_info", "PXC/Galera status information.",
 				[]string{"wsrep_local_state_uuid", "wsrep_cluster_state_uuid", "wsrep_provider_version"}, nil),
 			prometheus.GaugeValue, 1, textItems["wsrep_local_state_uuid"], textItems["wsrep_cluster_state_uuid"], textItems["wsrep_provider_version"],
 		)
@@ -215,8 +217,8 @@ func (ScrapeGlobalStatus) Scrape(ctx context.Context, db *sql.DB, ch chan<- prom
 			if evsParsingSuccess {
 				for _, v := range evsMap {
 					key := prometheus.BuildFQName(namespace, "galera_evs_repl_latency", v.name)
-					desc := prometheus.NewDesc(key, v.help, []string{}, nil)
-					ch <- prometheus.MustNewConstMetric(desc, prometheus.GaugeValue, v.value)
+					desc := prometheus.NewDesc(key, v.help, []string{"hostname", "subsystemName", "subsystemID"}, nil)
+					ch <- mustNewConstMetric(&ctx, desc, prometheus.GaugeValue, v.value)
 				}
 			}
 		}

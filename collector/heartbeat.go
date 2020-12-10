@@ -53,13 +53,13 @@ var (
 
 // Metric descriptors.
 var (
-	HeartbeatStoredDesc = prometheus.NewDesc(
-		prometheus.BuildFQName(namespace, heartbeat, "stored_timestamp_seconds"),
+	HeartbeatStoredDesc = newDesc(
+		heartbeat, "stored_timestamp_seconds",
 		"Timestamp stored in the heartbeat table.",
 		[]string{"server_id"}, nil,
 	)
-	HeartbeatNowDesc = prometheus.NewDesc(
-		prometheus.BuildFQName(namespace, heartbeat, "now_timestamp_seconds"),
+	HeartbeatNowDesc = newDesc(
+		heartbeat, "now_timestamp_seconds",
 		"Timestamp of the current server.",
 		[]string{"server_id"}, nil,
 	)
@@ -128,13 +128,15 @@ func (ScrapeHeartbeat) Scrape(ctx context.Context, db *sql.DB, ch chan<- prometh
 
 		serverId := strconv.Itoa(serverId)
 
-		ch <- prometheus.MustNewConstMetric(
+		ch <- mustNewConstMetric(
+			&ctx,
 			HeartbeatNowDesc,
 			prometheus.GaugeValue,
 			nowFloatVal,
 			serverId,
 		)
-		ch <- prometheus.MustNewConstMetric(
+		ch <- mustNewConstMetric(
+			&ctx,
 			HeartbeatStoredDesc,
 			prometheus.GaugeValue,
 			tsFloatVal,

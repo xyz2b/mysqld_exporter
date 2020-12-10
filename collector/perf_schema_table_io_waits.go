@@ -34,13 +34,13 @@ const perfTableIOWaitsQuery = `
 
 // Metric descriptors.
 var (
-	performanceSchemaTableWaitsDesc = prometheus.NewDesc(
-		prometheus.BuildFQName(namespace, performanceSchema, "table_io_waits_total"),
+	performanceSchemaTableWaitsDesc = newDesc(
+		performanceSchema, "table_io_waits_total",
 		"The total number of table I/O wait events for each table and operation.",
 		[]string{"schema", "name", "operation"}, nil,
 	)
-	performanceSchemaTableWaitsTimeDesc = prometheus.NewDesc(
-		prometheus.BuildFQName(namespace, performanceSchema, "table_io_waits_seconds_total"),
+	performanceSchemaTableWaitsTimeDesc = newDesc(
+		performanceSchema, "table_io_waits_seconds_total",
 		"The total time of table I/O wait events for each table and operation.",
 		[]string{"schema", "name", "operation"}, nil,
 	)
@@ -85,35 +85,43 @@ func (ScrapePerfTableIOWaits) Scrape(ctx context.Context, db *sql.DB, ch chan<- 
 		); err != nil {
 			return err
 		}
-		ch <- prometheus.MustNewConstMetric(
+		ch <- mustNewConstMetric(
+			&ctx,
 			performanceSchemaTableWaitsDesc, prometheus.CounterValue, float64(countFetch),
 			objectSchema, objectName, "fetch",
 		)
-		ch <- prometheus.MustNewConstMetric(
+		ch <- mustNewConstMetric(
+			&ctx,
 			performanceSchemaTableWaitsDesc, prometheus.CounterValue, float64(countInsert),
 			objectSchema, objectName, "insert",
 		)
-		ch <- prometheus.MustNewConstMetric(
+		ch <- mustNewConstMetric(
+			&ctx,
 			performanceSchemaTableWaitsDesc, prometheus.CounterValue, float64(countUpdate),
 			objectSchema, objectName, "update",
 		)
-		ch <- prometheus.MustNewConstMetric(
+		ch <- mustNewConstMetric(
+			&ctx,
 			performanceSchemaTableWaitsDesc, prometheus.CounterValue, float64(countDelete),
 			objectSchema, objectName, "delete",
 		)
-		ch <- prometheus.MustNewConstMetric(
+		ch <- mustNewConstMetric(
+			&ctx,
 			performanceSchemaTableWaitsTimeDesc, prometheus.CounterValue, float64(timeFetch)/picoSeconds,
 			objectSchema, objectName, "fetch",
 		)
-		ch <- prometheus.MustNewConstMetric(
+		ch <- mustNewConstMetric(
+			&ctx,
 			performanceSchemaTableWaitsTimeDesc, prometheus.CounterValue, float64(timeInsert)/picoSeconds,
 			objectSchema, objectName, "insert",
 		)
-		ch <- prometheus.MustNewConstMetric(
+		ch <- mustNewConstMetric(
+			&ctx,
 			performanceSchemaTableWaitsTimeDesc, prometheus.CounterValue, float64(timeUpdate)/picoSeconds,
 			objectSchema, objectName, "update",
 		)
-		ch <- prometheus.MustNewConstMetric(
+		ch <- mustNewConstMetric(
+			&ctx,
 			performanceSchemaTableWaitsTimeDesc, prometheus.CounterValue, float64(timeDelete)/picoSeconds,
 			objectSchema, objectName, "delete",
 		)

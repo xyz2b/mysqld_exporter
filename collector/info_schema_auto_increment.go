@@ -39,13 +39,13 @@ const infoSchemaAutoIncrementQuery = `
 
 // Metric descriptors.
 var (
-	globalInfoSchemaAutoIncrementDesc = prometheus.NewDesc(
-		prometheus.BuildFQName(namespace, informationSchema, "auto_increment_column"),
+	globalInfoSchemaAutoIncrementDesc = newDesc(
+		informationSchema, "auto_increment_column",
 		"The current value of an auto_increment column from information_schema.",
 		[]string{"schema", "table", "column"}, nil,
 	)
-	globalInfoSchemaAutoIncrementMaxDesc = prometheus.NewDesc(
-		prometheus.BuildFQName(namespace, informationSchema, "auto_increment_column_max"),
+	globalInfoSchemaAutoIncrementMaxDesc = newDesc(
+		informationSchema, "auto_increment_column_max",
 		"The max value of an auto_increment column from information_schema.",
 		[]string{"schema", "table", "column"}, nil,
 	)
@@ -88,11 +88,13 @@ func (ScrapeAutoIncrementColumns) Scrape(ctx context.Context, db *sql.DB, ch cha
 		); err != nil {
 			return err
 		}
-		ch <- prometheus.MustNewConstMetric(
+		ch <- mustNewConstMetric(
+			&ctx,
 			globalInfoSchemaAutoIncrementDesc, prometheus.GaugeValue, value,
 			schema, table, column,
 		)
-		ch <- prometheus.MustNewConstMetric(
+		ch <- mustNewConstMetric(
+			&ctx,
 			globalInfoSchemaAutoIncrementMaxDesc, prometheus.GaugeValue, max,
 			schema, table, column,
 		)

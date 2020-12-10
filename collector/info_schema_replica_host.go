@@ -38,28 +38,28 @@ const replicaHostQuery = `
 
 // Metric descriptors.
 var (
-	infoSchemaReplicaHostCpuDesc = prometheus.NewDesc(
-		prometheus.BuildFQName(namespace, informationSchema, "replica_host_cpu_percent"),
+	infoSchemaReplicaHostCpuDesc = newDesc(
+		informationSchema, "replica_host_cpu_percent",
 		"The CPU usage as a percentage.",
 		[]string{"server_id", "role"}, nil,
 	)
-	infoSchemaReplicaHostSlaveLatencyDesc = prometheus.NewDesc(
-		prometheus.BuildFQName(namespace, informationSchema, "replica_host_slave_latency_seconds"),
+	infoSchemaReplicaHostSlaveLatencyDesc = newDesc(
+		informationSchema, "replica_host_slave_latency_seconds",
 		"The master-slave latency in seconds.",
 		[]string{"server_id", "role"}, nil,
 	)
-	infoSchemaReplicaHostLagDesc = prometheus.NewDesc(
-		prometheus.BuildFQName(namespace, informationSchema, "replica_host_lag_seconds"),
+	infoSchemaReplicaHostLagDesc = newDesc(
+		informationSchema, "replica_host_lag_seconds",
 		"The replica lag in seconds.",
 		[]string{"server_id", "role"}, nil,
 	)
-	infoSchemaReplicaHostLogStreamSpeedDesc = prometheus.NewDesc(
-		prometheus.BuildFQName(namespace, informationSchema, "replica_host_log_stream_speed"),
+	infoSchemaReplicaHostLogStreamSpeedDesc = newDesc(
+		informationSchema, "replica_host_log_stream_speed",
 		"The log stream speed in kilobytes per second.",
 		[]string{"server_id", "role"}, nil,
 	)
-	infoSchemaReplicaHostReplayLatencyDesc = prometheus.NewDesc(
-		prometheus.BuildFQName(namespace, informationSchema, "replica_host_replay_latency_seconds"),
+	infoSchemaReplicaHostReplayLatencyDesc = newDesc(
+		informationSchema, "replica_host_replay_latency_seconds",
 		"The current replay latency in seconds.",
 		[]string{"server_id", "role"}, nil,
 	)
@@ -119,23 +119,28 @@ func (ScrapeReplicaHost) Scrape(ctx context.Context, db *sql.DB, ch chan<- prome
 		); err != nil {
 			return err
 		}
-		ch <- prometheus.MustNewConstMetric(
+		ch <- mustNewConstMetric(
+			&ctx,
 			infoSchemaReplicaHostCpuDesc, prometheus.GaugeValue, cpu,
 			serverId, role,
 		)
-		ch <- prometheus.MustNewConstMetric(
+		ch <- mustNewConstMetric(
+			&ctx,
 			infoSchemaReplicaHostSlaveLatencyDesc, prometheus.GaugeValue, float64(slaveLatency)*0.000001,
 			serverId, role,
 		)
-		ch <- prometheus.MustNewConstMetric(
+		ch <- mustNewConstMetric(
+			&ctx,
 			infoSchemaReplicaHostLagDesc, prometheus.GaugeValue, replicaLag*0.001,
 			serverId, role,
 		)
-		ch <- prometheus.MustNewConstMetric(
+		ch <- mustNewConstMetric(
+			&ctx,
 			infoSchemaReplicaHostLogStreamSpeedDesc, prometheus.GaugeValue, logStreamSpeed,
 			serverId, role,
 		)
-		ch <- prometheus.MustNewConstMetric(
+		ch <- mustNewConstMetric(
+			&ctx,
 			infoSchemaReplicaHostReplayLatencyDesc, prometheus.GaugeValue, float64(replayLatency)*0.000001,
 			serverId, role,
 		)

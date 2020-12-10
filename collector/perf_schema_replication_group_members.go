@@ -73,15 +73,15 @@ func (ScrapePerfReplicationGroupMembers) Scrape(ctx context.Context, db *sql.DB,
 			values[i] = string(*scanArgs[i].(*sql.RawBytes))
 		}
 
-		var performanceSchemaReplicationGroupMembersMemberDesc = prometheus.NewDesc(
-			prometheus.BuildFQName(namespace, performanceSchema, "replication_group_member_info"),
+		var performanceSchemaReplicationGroupMembersMemberDesc = newDesc(
+			performanceSchema, "replication_group_member_info",
 			"Information about the replication group member: "+
 				"channel_name, member_id, member_host, member_port, member_state. "+
 				"(member_role and member_version where available)",
 			labelNames, nil,
 		)
 
-		ch <- prometheus.MustNewConstMetric(performanceSchemaReplicationGroupMembersMemberDesc,
+		ch <- mustNewConstMetric(&ctx, performanceSchemaReplicationGroupMembersMemberDesc,
 			prometheus.GaugeValue, 1, values...)
 	}
 	return nil

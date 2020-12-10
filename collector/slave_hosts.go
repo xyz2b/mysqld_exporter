@@ -36,8 +36,8 @@ const (
 
 // Metric descriptors.
 var (
-	SlaveHostsInfo = prometheus.NewDesc(
-		prometheus.BuildFQName(namespace, heartbeat, "mysql_slave_hosts_info"),
+	SlaveHostsInfo = newDesc(
+		heartbeat, "mysql_slave_hosts_info",
 		"Information about running slaves",
 		[]string{"server_id", "slave_host", "port", "master_id", "slave_uuid"}, nil,
 	)
@@ -102,7 +102,8 @@ func (ScrapeSlaveHosts) Scrape(ctx context.Context, db *sql.DB, ch chan<- promet
 			masterId = rrrOrMasterId
 		}
 
-		ch <- prometheus.MustNewConstMetric(
+		ch <- mustNewConstMetric(
+			&ctx,
 			SlaveHostsInfo,
 			prometheus.GaugeValue,
 			1,

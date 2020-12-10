@@ -35,23 +35,23 @@ const infoSchemaInnodbMetricsQuery = `
 
 // Metrics descriptors.
 var (
-	infoSchemaBufferPageReadTotalDesc = prometheus.NewDesc(
-		prometheus.BuildFQName(namespace, informationSchema, "innodb_metrics_buffer_page_read_total"),
+	infoSchemaBufferPageReadTotalDesc = newDesc(
+		informationSchema, "innodb_metrics_buffer_page_read_total",
 		"Total number of buffer pages read total.",
 		[]string{"type"}, nil,
 	)
-	infoSchemaBufferPageWrittenTotalDesc = prometheus.NewDesc(
-		prometheus.BuildFQName(namespace, informationSchema, "innodb_metrics_buffer_page_written_total"),
+	infoSchemaBufferPageWrittenTotalDesc = newDesc(
+		informationSchema, "innodb_metrics_buffer_page_written_total",
 		"Total number of buffer pages written total.",
 		[]string{"type"}, nil,
 	)
-	infoSchemaBufferPoolPagesDesc = prometheus.NewDesc(
-		prometheus.BuildFQName(namespace, informationSchema, "innodb_metrics_buffer_pool_pages"),
+	infoSchemaBufferPoolPagesDesc = newDesc(
+		informationSchema, "innodb_metrics_buffer_pool_pages",
 		"Total number of buffer pool pages by state.",
 		[]string{"state"}, nil,
 	)
-	infoSchemaBufferPoolPagesDirtyDesc = prometheus.NewDesc(
-		prometheus.BuildFQName(namespace, informationSchema, "innodb_metrics_buffer_pool_dirty_pages"),
+	infoSchemaBufferPoolPagesDirtyDesc = newDesc(
+		informationSchema, "innodb_metrics_buffer_pool_dirty_pages",
 		"Total number of dirty pages in the buffer pool.",
 		nil, nil,
 	)
@@ -109,12 +109,12 @@ func (ScrapeInnodbMetrics) Scrape(ctx context.Context, db *sql.DB, ch chan<- pro
 			}
 			switch match[1] {
 			case "read":
-				ch <- prometheus.MustNewConstMetric(
-					infoSchemaBufferPageReadTotalDesc, prometheus.CounterValue, value, match[2],
+				ch <- mustNewConstMetric(
+					&ctx, infoSchemaBufferPageReadTotalDesc, prometheus.CounterValue, value, match[2],
 				)
 			case "written":
-				ch <- prometheus.MustNewConstMetric(
-					infoSchemaBufferPageWrittenTotalDesc, prometheus.CounterValue, value, match[2],
+				ch <- mustNewConstMetric(
+					&ctx, infoSchemaBufferPageWrittenTotalDesc, prometheus.CounterValue, value, match[2],
 				)
 			}
 			continue
@@ -131,12 +131,12 @@ func (ScrapeInnodbMetrics) Scrape(ctx context.Context, db *sql.DB, ch chan<- pro
 						continue
 					case "dirty":
 						// Dirty pages are a separate metric, not in the total.
-						ch <- prometheus.MustNewConstMetric(
-							infoSchemaBufferPoolPagesDirtyDesc, prometheus.GaugeValue, value,
+						ch <- mustNewConstMetric(
+							&ctx, infoSchemaBufferPoolPagesDirtyDesc, prometheus.GaugeValue, value,
 						)
 					default:
-						ch <- prometheus.MustNewConstMetric(
-							infoSchemaBufferPoolPagesDesc, prometheus.GaugeValue, value, match[2],
+						ch <- mustNewConstMetric(
+							&ctx, infoSchemaBufferPoolPagesDesc, prometheus.GaugeValue, value, match[2],
 						)
 					}
 				}
@@ -147,21 +147,23 @@ func (ScrapeInnodbMetrics) Scrape(ctx context.Context, db *sql.DB, ch chan<- pro
 		// MySQL returns counters named two different ways. "counter" and "status_counter"
 		// value >= 0 is necessary due to upstream bugs: http://bugs.mysql.com/bug.php?id=75966
 		if (metricType == "counter" || metricType == "status_counter") && value >= 0 {
-			description := prometheus.NewDesc(
-				prometheus.BuildFQName(namespace, informationSchema, metricName+"_total"),
+			description := newDesc(
+				informationSchema, metricName+"_total",
 				comment, nil, nil,
 			)
-			ch <- prometheus.MustNewConstMetric(
+			ch <- mustNewConstMetric(
+				&ctx,
 				description,
 				prometheus.CounterValue,
 				value,
 			)
 		} else {
-			description := prometheus.NewDesc(
-				prometheus.BuildFQName(namespace, informationSchema, metricName),
+			description := newDesc(
+				informationSchema, metricName,
 				comment, nil, nil,
 			)
-			ch <- prometheus.MustNewConstMetric(
+			ch <- mustNewConstMetric(
+				&ctx,
 				description,
 				prometheus.GaugeValue,
 				value,

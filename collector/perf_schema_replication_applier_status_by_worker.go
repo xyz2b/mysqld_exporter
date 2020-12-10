@@ -39,44 +39,44 @@ const timeLayout = "2006-01-02 15:04:05.000000"
 
 // Metric descriptors.
 var (
-	performanceSchemaReplicationApplierStatsByWorkerLastAppliedTransactionOriginalCommitSecondDesc = prometheus.NewDesc(
-		prometheus.BuildFQName(namespace, performanceSchema, "last_applied_transaction_original_commit_timestamp_seconds"),
+	performanceSchemaReplicationApplierStatsByWorkerLastAppliedTransactionOriginalCommitSecondDesc = newDesc(
+		performanceSchema, "last_applied_transaction_original_commit_timestamp_seconds",
 		"A timestamp shows when the last transaction applied by this worker was committed on the original master.",
 		[]string{"channel_name", "member_id"}, nil,
 	)
 
-	performanceSchemaReplicationApplierStatsByWorkerLastAppliedTransactionImmediateCommitSecondDesc = prometheus.NewDesc(
-		prometheus.BuildFQName(namespace, performanceSchema, "last_applied_transaction_immediate_commit_timestamp_seconds"),
+	performanceSchemaReplicationApplierStatsByWorkerLastAppliedTransactionImmediateCommitSecondDesc = newDesc(
+		performanceSchema, "last_applied_transaction_immediate_commit_timestamp_seconds",
 		"A timestamp shows when the last transaction applied by this worker was committed on the immediate master.",
 		[]string{"channel_name", "member_id"}, nil,
 	)
 
-	performanceSchemaReplicationApplierStatsByWorkerLastAppliedTransactionStartApplySecondDesc = prometheus.NewDesc(
-		prometheus.BuildFQName(namespace, performanceSchema, "last_applied_transaction_start_apply_timestamp_seconds"),
+	performanceSchemaReplicationApplierStatsByWorkerLastAppliedTransactionStartApplySecondDesc = newDesc(
+		performanceSchema, "last_applied_transaction_start_apply_timestamp_seconds",
 		"A timestamp shows when this worker started applying the last applied transaction.",
 		[]string{"channel_name", "member_id"}, nil,
 	)
 
-	performanceSchemaReplicationApplierStatsByWorkerLastAppliedTransactionEndApplySecondDesc = prometheus.NewDesc(
-		prometheus.BuildFQName(namespace, performanceSchema, "last_applied_transaction_end_apply_timestamp_seconds"),
+	performanceSchemaReplicationApplierStatsByWorkerLastAppliedTransactionEndApplySecondDesc = newDesc(
+		performanceSchema, "last_applied_transaction_end_apply_timestamp_seconds",
 		"A shows when this worker finished applying the last applied transaction.",
 		[]string{"channel_name", "member_id"}, nil,
 	)
 
-	performanceSchemaReplicationApplierStatsByWorkerApplyingTransactionOriginalCommitSecondDesc = prometheus.NewDesc(
-		prometheus.BuildFQName(namespace, performanceSchema, "applying_transaction_original_commit_timestamp_seconds"),
+	performanceSchemaReplicationApplierStatsByWorkerApplyingTransactionOriginalCommitSecondDesc = newDesc(
+		performanceSchema, "applying_transaction_original_commit_timestamp_seconds",
 		"A timestamp that shows when the transaction this worker is currently applying was committed on the original master.",
 		[]string{"channel_name", "member_id"}, nil,
 	)
 
-	performanceSchemaReplicationApplierStatsByWorkerApplyingTransactionImmediateCommitSecondDesc = prometheus.NewDesc(
-		prometheus.BuildFQName(namespace, performanceSchema, "applying_transaction_immediate_commit_timestamp_seconds"),
+	performanceSchemaReplicationApplierStatsByWorkerApplyingTransactionImmediateCommitSecondDesc = newDesc(
+		performanceSchema, "applying_transaction_immediate_commit_timestamp_seconds",
 		"A timestamp shows when the transaction this worker is currently applying was committed on the immediate master.",
 		[]string{"channel_name", "member_id"}, nil,
 	)
 
-	performanceSchemaReplicationApplierStatsByWorkerApplyingTransactionStartApplySecondDesc = prometheus.NewDesc(
-		prometheus.BuildFQName(namespace, performanceSchema, "applying_transaction_start_apply_timestamp_seconds"),
+	performanceSchemaReplicationApplierStatsByWorkerApplyingTransactionStartApplySecondDesc = newDesc(
+		performanceSchema, "applying_transaction_start_apply_timestamp_seconds",
 		"A timestamp shows when this worker started its first attempt to apply the transaction that is currently being applied.",
 		[]string{"channel_name", "member_id"}, nil,
 	)
@@ -141,7 +141,8 @@ func (ScrapePerfReplicationApplierStatsByWorker) Scrape(ctx context.Context, db 
 		} else {
 			lastAppliedTransactionOriginalCommitSeconds = 0
 		}
-		ch <- prometheus.MustNewConstMetric(
+		ch <- mustNewConstMetric(
+			&ctx,
 			performanceSchemaReplicationApplierStatsByWorkerLastAppliedTransactionOriginalCommitSecondDesc,
 			prometheus.GaugeValue, lastAppliedTransactionOriginalCommitSeconds, channelName, workerId,
 		)
@@ -155,7 +156,8 @@ func (ScrapePerfReplicationApplierStatsByWorker) Scrape(ctx context.Context, db 
 		} else {
 			lastAppliedTransactionImmediateCommitSeconds = 0
 		}
-		ch <- prometheus.MustNewConstMetric(
+		ch <- mustNewConstMetric(
+			&ctx,
 			performanceSchemaReplicationApplierStatsByWorkerLastAppliedTransactionImmediateCommitSecondDesc,
 			prometheus.GaugeValue, lastAppliedTransactionImmediateCommitSeconds, channelName, workerId,
 		)
@@ -169,7 +171,8 @@ func (ScrapePerfReplicationApplierStatsByWorker) Scrape(ctx context.Context, db 
 		} else {
 			lastAppliedTransactionStartApplySeconds = 0
 		}
-		ch <- prometheus.MustNewConstMetric(
+		ch <- mustNewConstMetric(
+			&ctx,
 			performanceSchemaReplicationApplierStatsByWorkerLastAppliedTransactionStartApplySecondDesc,
 			prometheus.GaugeValue, lastAppliedTransactionStartApplySeconds, channelName, workerId,
 		)
@@ -183,7 +186,8 @@ func (ScrapePerfReplicationApplierStatsByWorker) Scrape(ctx context.Context, db 
 		} else {
 			lastAppliedTransactionEndApplySeconds = 0
 		}
-		ch <- prometheus.MustNewConstMetric(
+		ch <- mustNewConstMetric(
+			&ctx,
 			performanceSchemaReplicationApplierStatsByWorkerLastAppliedTransactionEndApplySecondDesc,
 			prometheus.GaugeValue, lastAppliedTransactionEndApplySeconds, channelName, workerId,
 		)
@@ -197,7 +201,8 @@ func (ScrapePerfReplicationApplierStatsByWorker) Scrape(ctx context.Context, db 
 		} else {
 			applyingTransactionOriginalCommitSeconds = 0
 		}
-		ch <- prometheus.MustNewConstMetric(
+		ch <- mustNewConstMetric(
+			&ctx,
 			performanceSchemaReplicationApplierStatsByWorkerApplyingTransactionOriginalCommitSecondDesc,
 			prometheus.GaugeValue, applyingTransactionOriginalCommitSeconds, channelName, workerId,
 		)
@@ -211,7 +216,8 @@ func (ScrapePerfReplicationApplierStatsByWorker) Scrape(ctx context.Context, db 
 		} else {
 			applyingTransactionImmediateCommitSeconds = 0
 		}
-		ch <- prometheus.MustNewConstMetric(
+		ch <- mustNewConstMetric(
+			&ctx,
 			performanceSchemaReplicationApplierStatsByWorkerApplyingTransactionImmediateCommitSecondDesc,
 			prometheus.GaugeValue, applyingTransactionImmediateCommitSeconds, channelName, workerId,
 		)
@@ -225,7 +231,8 @@ func (ScrapePerfReplicationApplierStatsByWorker) Scrape(ctx context.Context, db 
 		} else {
 			applyingTransactionStartApplySeconds = 0
 		}
-		ch <- prometheus.MustNewConstMetric(
+		ch <- mustNewConstMetric(
+			&ctx,
 			performanceSchemaReplicationApplierStatsByWorkerApplyingTransactionStartApplySecondDesc,
 			prometheus.GaugeValue, applyingTransactionStartApplySeconds, channelName, workerId,
 		)

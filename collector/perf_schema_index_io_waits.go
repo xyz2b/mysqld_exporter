@@ -33,13 +33,13 @@ const perfIndexIOWaitsQuery = `
 
 // Metric descriptors.
 var (
-	performanceSchemaIndexWaitsDesc = prometheus.NewDesc(
-		prometheus.BuildFQName(namespace, performanceSchema, "index_io_waits_total"),
+	performanceSchemaIndexWaitsDesc = newDesc(
+		performanceSchema, "index_io_waits_total",
 		"The total number of index I/O wait events for each index and operation.",
 		[]string{"schema", "name", "index", "operation"}, nil,
 	)
-	performanceSchemaIndexWaitsTimeDesc = prometheus.NewDesc(
-		prometheus.BuildFQName(namespace, performanceSchema, "index_io_waits_seconds_total"),
+	performanceSchemaIndexWaitsTimeDesc = newDesc(
+		performanceSchema, "index_io_waits_seconds_total",
 		"The total time of index I/O wait events for each index and operation.",
 		[]string{"schema", "name", "index", "operation"}, nil,
 	)
@@ -85,41 +85,49 @@ func (ScrapePerfIndexIOWaits) Scrape(ctx context.Context, db *sql.DB, ch chan<- 
 		); err != nil {
 			return err
 		}
-		ch <- prometheus.MustNewConstMetric(
+		ch <- mustNewConstMetric(
+			&ctx,
 			performanceSchemaIndexWaitsDesc, prometheus.CounterValue, float64(countFetch),
 			objectSchema, objectName, indexName, "fetch",
 		)
 		// We only include the insert column when indexName is NONE.
 		if indexName == "NONE" {
-			ch <- prometheus.MustNewConstMetric(
+			ch <- mustNewConstMetric(
+				&ctx,
 				performanceSchemaIndexWaitsDesc, prometheus.CounterValue, float64(countInsert),
 				objectSchema, objectName, indexName, "insert",
 			)
 		}
-		ch <- prometheus.MustNewConstMetric(
+		ch <- mustNewConstMetric(
+			&ctx,
 			performanceSchemaIndexWaitsDesc, prometheus.CounterValue, float64(countUpdate),
 			objectSchema, objectName, indexName, "update",
 		)
-		ch <- prometheus.MustNewConstMetric(
+		ch <- mustNewConstMetric(
+			&ctx,
 			performanceSchemaIndexWaitsDesc, prometheus.CounterValue, float64(countDelete),
 			objectSchema, objectName, indexName, "delete",
 		)
-		ch <- prometheus.MustNewConstMetric(
+		ch <- mustNewConstMetric(
+			&ctx,
 			performanceSchemaIndexWaitsTimeDesc, prometheus.CounterValue, float64(timeFetch)/picoSeconds,
 			objectSchema, objectName, indexName, "fetch",
 		)
 		// We only update write columns when indexName is NONE.
 		if indexName == "NONE" {
-			ch <- prometheus.MustNewConstMetric(
+			ch <- mustNewConstMetric(
+				&ctx,
 				performanceSchemaIndexWaitsTimeDesc, prometheus.CounterValue, float64(timeInsert)/picoSeconds,
 				objectSchema, objectName, indexName, "insert",
 			)
 		}
-		ch <- prometheus.MustNewConstMetric(
+		ch <- mustNewConstMetric(
+			&ctx,
 			performanceSchemaIndexWaitsTimeDesc, prometheus.CounterValue, float64(timeUpdate)/picoSeconds,
 			objectSchema, objectName, indexName, "update",
 		)
-		ch <- prometheus.MustNewConstMetric(
+		ch <- mustNewConstMetric(
+			&ctx,
 			performanceSchemaIndexWaitsTimeDesc, prometheus.CounterValue, float64(timeDelete)/picoSeconds,
 			objectSchema, objectName, indexName, "delete",
 		)

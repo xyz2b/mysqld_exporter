@@ -36,18 +36,18 @@ const schemaStatQuery = `
 
 // Metric descriptors.
 var (
-	infoSchemaStatsRowsReadDesc = prometheus.NewDesc(
-		prometheus.BuildFQName(namespace, informationSchema, "schema_statistics_rows_read_total"),
+	infoSchemaStatsRowsReadDesc = newDesc(
+		informationSchema, "schema_statistics_rows_read_total",
 		"The number of rows read from the schema.",
 		[]string{"schema"}, nil,
 	)
-	infoSchemaStatsRowsChangedDesc = prometheus.NewDesc(
-		prometheus.BuildFQName(namespace, informationSchema, "schema_statistics_rows_changed_total"),
+	infoSchemaStatsRowsChangedDesc = newDesc(
+		informationSchema, "schema_statistics_rows_changed_total",
 		"The number of rows changed in the schema.",
 		[]string{"schema"}, nil,
 	)
-	infoSchemaStatsRowsChangedXIndexesDesc = prometheus.NewDesc(
-		prometheus.BuildFQName(namespace, informationSchema, "schema_statistics_rows_changed_x_indexes_total"),
+	infoSchemaStatsRowsChangedXIndexesDesc = newDesc(
+		informationSchema, "schema_statistics_rows_changed_x_indexes_total",
 		"The number of rows changed in the schema, multiplied by the number of indexes changed.",
 		[]string{"schema"}, nil,
 	)
@@ -109,15 +109,18 @@ func (ScrapeSchemaStat) Scrape(ctx context.Context, db *sql.DB, ch chan<- promet
 		if err != nil {
 			return err
 		}
-		ch <- prometheus.MustNewConstMetric(
+		ch <- mustNewConstMetric(
+			&ctx,
 			infoSchemaStatsRowsReadDesc, prometheus.CounterValue, float64(rowsRead),
 			tableSchema,
 		)
-		ch <- prometheus.MustNewConstMetric(
+		ch <- mustNewConstMetric(
+			&ctx,
 			infoSchemaStatsRowsChangedDesc, prometheus.CounterValue, float64(rowsChanged),
 			tableSchema,
 		)
-		ch <- prometheus.MustNewConstMetric(
+		ch <- mustNewConstMetric(
+			&ctx,
 			infoSchemaStatsRowsChangedXIndexesDesc, prometheus.CounterValue, float64(rowsChangedXIndexes),
 			tableSchema,
 		)

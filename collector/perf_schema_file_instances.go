@@ -49,13 +49,13 @@ var (
 
 // Metric descriptors.
 var (
-	performanceSchemaFileInstancesBytesDesc = prometheus.NewDesc(
-		prometheus.BuildFQName(namespace, performanceSchema, "file_instances_bytes"),
+	performanceSchemaFileInstancesBytesDesc = newDesc(
+		performanceSchema, "file_instances_bytes",
 		"The number of bytes processed by file read/write operations.",
 		[]string{"file_name", "event_name", "mode"}, nil,
 	)
-	performanceSchemaFileInstancesCountDesc = prometheus.NewDesc(
-		prometheus.BuildFQName(namespace, performanceSchema, "file_instances_total"),
+	performanceSchemaFileInstancesCountDesc = newDesc(
+		performanceSchema, "file_instances_total",
 		"The total number of file read/write operations.",
 		[]string{"file_name", "event_name", "mode"}, nil,
 	)
@@ -104,19 +104,23 @@ func (ScrapePerfFileInstances) Scrape(ctx context.Context, db *sql.DB, ch chan<-
 		}
 
 		fileName = strings.TrimPrefix(fileName, *performanceSchemaFileInstancesRemovePrefix)
-		ch <- prometheus.MustNewConstMetric(
+		ch <- mustNewConstMetric(
+			&ctx,
 			performanceSchemaFileInstancesCountDesc, prometheus.CounterValue, float64(countRead),
 			fileName, eventName, "read",
 		)
-		ch <- prometheus.MustNewConstMetric(
+		ch <- mustNewConstMetric(
+			&ctx,
 			performanceSchemaFileInstancesCountDesc, prometheus.CounterValue, float64(countWrite),
 			fileName, eventName, "write",
 		)
-		ch <- prometheus.MustNewConstMetric(
+		ch <- mustNewConstMetric(
+			&ctx,
 			performanceSchemaFileInstancesBytesDesc, prometheus.CounterValue, float64(sumBytesRead),
 			fileName, eventName, "read",
 		)
-		ch <- prometheus.MustNewConstMetric(
+		ch <- mustNewConstMetric(
+			&ctx,
 			performanceSchemaFileInstancesBytesDesc, prometheus.CounterValue, float64(sumBytesWritten),
 			fileName, eventName, "write",
 		)

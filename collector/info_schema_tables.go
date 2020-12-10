@@ -61,18 +61,18 @@ var (
 
 // Metric descriptors.
 var (
-	infoSchemaTablesVersionDesc = prometheus.NewDesc(
-		prometheus.BuildFQName(namespace, informationSchema, "table_version"),
+	infoSchemaTablesVersionDesc = newDesc(
+		informationSchema, "table_version",
 		"The version number of the table's .frm file",
 		[]string{"schema", "table", "type", "engine", "row_format", "create_options"}, nil,
 	)
-	infoSchemaTablesRowsDesc = prometheus.NewDesc(
-		prometheus.BuildFQName(namespace, informationSchema, "table_rows"),
+	infoSchemaTablesRowsDesc = newDesc(
+		informationSchema, "table_rows",
 		"The estimated number of rows in the table from information_schema.tables",
 		[]string{"schema", "table"}, nil,
 	)
-	infoSchemaTablesSizeDesc = prometheus.NewDesc(
-		prometheus.BuildFQName(namespace, informationSchema, "table_size"),
+	infoSchemaTablesSizeDesc = newDesc(
+		informationSchema, "table_size",
 		"The size of the table components from information_schema.tables",
 		[]string{"schema", "table", "component"}, nil,
 	)
@@ -158,23 +158,28 @@ func (ScrapeTableSchema) Scrape(ctx context.Context, db *sql.DB, ch chan<- prome
 			if err != nil {
 				return err
 			}
-			ch <- prometheus.MustNewConstMetric(
+			ch <- mustNewConstMetric(
+				&ctx,
 				infoSchemaTablesVersionDesc, prometheus.GaugeValue, float64(version),
 				tableSchema, tableName, tableType, engine, rowFormat, createOptions,
 			)
-			ch <- prometheus.MustNewConstMetric(
+			ch <- mustNewConstMetric(
+				&ctx,
 				infoSchemaTablesRowsDesc, prometheus.GaugeValue, float64(tableRows),
 				tableSchema, tableName,
 			)
-			ch <- prometheus.MustNewConstMetric(
+			ch <- mustNewConstMetric(
+				&ctx,
 				infoSchemaTablesSizeDesc, prometheus.GaugeValue, float64(dataLength),
 				tableSchema, tableName, "data_length",
 			)
-			ch <- prometheus.MustNewConstMetric(
+			ch <- mustNewConstMetric(
+				&ctx,
 				infoSchemaTablesSizeDesc, prometheus.GaugeValue, float64(indexLength),
 				tableSchema, tableName, "index_length",
 			)
-			ch <- prometheus.MustNewConstMetric(
+			ch <- mustNewConstMetric(
+				&ctx,
 				infoSchemaTablesSizeDesc, prometheus.GaugeValue, float64(dataFree),
 				tableSchema, tableName, "data_free",
 			)

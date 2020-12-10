@@ -87,63 +87,63 @@ var (
 
 // Metric descriptors.
 var (
-	performanceSchemaEventsStatementsDesc = prometheus.NewDesc(
-		prometheus.BuildFQName(namespace, performanceSchema, "events_statements_total"),
+	performanceSchemaEventsStatementsDesc = newDesc(
+		performanceSchema, "events_statements_total",
 		"The total count of events statements by digest.",
 		[]string{"schema", "digest", "digest_text"}, nil,
 	)
-	performanceSchemaEventsStatementsTimeDesc = prometheus.NewDesc(
-		prometheus.BuildFQName(namespace, performanceSchema, "events_statements_seconds_total"),
+	performanceSchemaEventsStatementsTimeDesc = newDesc(
+		performanceSchema, "events_statements_seconds_total",
 		"The total time of events statements by digest.",
 		[]string{"schema", "digest", "digest_text"}, nil,
 	)
-	performanceSchemaEventsStatementsErrorsDesc = prometheus.NewDesc(
-		prometheus.BuildFQName(namespace, performanceSchema, "events_statements_errors_total"),
+	performanceSchemaEventsStatementsErrorsDesc = newDesc(
+		performanceSchema, "events_statements_errors_total",
 		"The errors of events statements by digest.",
 		[]string{"schema", "digest", "digest_text"}, nil,
 	)
-	performanceSchemaEventsStatementsWarningsDesc = prometheus.NewDesc(
-		prometheus.BuildFQName(namespace, performanceSchema, "events_statements_warnings_total"),
+	performanceSchemaEventsStatementsWarningsDesc = newDesc(
+		performanceSchema, "events_statements_warnings_total",
 		"The warnings of events statements by digest.",
 		[]string{"schema", "digest", "digest_text"}, nil,
 	)
-	performanceSchemaEventsStatementsRowsAffectedDesc = prometheus.NewDesc(
-		prometheus.BuildFQName(namespace, performanceSchema, "events_statements_rows_affected_total"),
+	performanceSchemaEventsStatementsRowsAffectedDesc = newDesc(
+		performanceSchema, "events_statements_rows_affected_total",
 		"The total rows affected of events statements by digest.",
 		[]string{"schema", "digest", "digest_text"}, nil,
 	)
-	performanceSchemaEventsStatementsRowsSentDesc = prometheus.NewDesc(
-		prometheus.BuildFQName(namespace, performanceSchema, "events_statements_rows_sent_total"),
+	performanceSchemaEventsStatementsRowsSentDesc = newDesc(
+		performanceSchema, "events_statements_rows_sent_total",
 		"The total rows sent of events statements by digest.",
 		[]string{"schema", "digest", "digest_text"}, nil,
 	)
-	performanceSchemaEventsStatementsRowsExaminedDesc = prometheus.NewDesc(
-		prometheus.BuildFQName(namespace, performanceSchema, "events_statements_rows_examined_total"),
+	performanceSchemaEventsStatementsRowsExaminedDesc = newDesc(
+		performanceSchema, "events_statements_rows_examined_total",
 		"The total rows examined of events statements by digest.",
 		[]string{"schema", "digest", "digest_text"}, nil,
 	)
-	performanceSchemaEventsStatementsTmpTablesDesc = prometheus.NewDesc(
-		prometheus.BuildFQName(namespace, performanceSchema, "events_statements_tmp_tables_total"),
+	performanceSchemaEventsStatementsTmpTablesDesc = newDesc(
+		performanceSchema, "events_statements_tmp_tables_total",
 		"The total tmp tables of events statements by digest.",
 		[]string{"schema", "digest", "digest_text"}, nil,
 	)
-	performanceSchemaEventsStatementsTmpDiskTablesDesc = prometheus.NewDesc(
-		prometheus.BuildFQName(namespace, performanceSchema, "events_statements_tmp_disk_tables_total"),
+	performanceSchemaEventsStatementsTmpDiskTablesDesc = newDesc(
+		performanceSchema, "events_statements_tmp_disk_tables_total",
 		"The total tmp disk tables of events statements by digest.",
 		[]string{"schema", "digest", "digest_text"}, nil,
 	)
-	performanceSchemaEventsStatementsSortMergePassesDesc = prometheus.NewDesc(
-		prometheus.BuildFQName(namespace, performanceSchema, "events_statements_sort_merge_passes_total"),
+	performanceSchemaEventsStatementsSortMergePassesDesc = newDesc(
+		performanceSchema, "events_statements_sort_merge_passes_total",
 		"The total number of merge passes by the sort algorithm performed by digest.",
 		[]string{"schema", "digest", "digest_text"}, nil,
 	)
-	performanceSchemaEventsStatementsSortRowsDesc = prometheus.NewDesc(
-		prometheus.BuildFQName(namespace, performanceSchema, "events_statements_sort_rows_total"),
+	performanceSchemaEventsStatementsSortRowsDesc = newDesc(
+		performanceSchema, "events_statements_sort_rows_total",
 		"The total number of sorted rows by digest.",
 		[]string{"schema", "digest", "digest_text"}, nil,
 	)
-	performanceSchemaEventsStatementsNoIndexUsedDesc = prometheus.NewDesc(
-		prometheus.BuildFQName(namespace, performanceSchema, "events_statements_no_index_used_total"),
+	performanceSchemaEventsStatementsNoIndexUsedDesc = newDesc(
+		performanceSchema, "events_statements_no_index_used_total",
 		"The total number of statements that used full table scans by digest.",
 		[]string{"schema", "digest", "digest_text"}, nil,
 	)
@@ -196,51 +196,63 @@ func (ScrapePerfEventsStatements) Scrape(ctx context.Context, db *sql.DB, ch cha
 		); err != nil {
 			return err
 		}
-		ch <- prometheus.MustNewConstMetric(
+		ch <- mustNewConstMetric(
+			&ctx,
 			performanceSchemaEventsStatementsDesc, prometheus.CounterValue, float64(count),
 			schemaName, digest, digestText,
 		)
-		ch <- prometheus.MustNewConstMetric(
+		ch <- mustNewConstMetric(
+			&ctx,
 			performanceSchemaEventsStatementsTimeDesc, prometheus.CounterValue, float64(queryTime)/picoSeconds,
 			schemaName, digest, digestText,
 		)
-		ch <- prometheus.MustNewConstMetric(
+		ch <- mustNewConstMetric(
+			&ctx,
 			performanceSchemaEventsStatementsErrorsDesc, prometheus.CounterValue, float64(errors),
 			schemaName, digest, digestText,
 		)
-		ch <- prometheus.MustNewConstMetric(
+		ch <- mustNewConstMetric(
+			&ctx,
 			performanceSchemaEventsStatementsWarningsDesc, prometheus.CounterValue, float64(warnings),
 			schemaName, digest, digestText,
 		)
-		ch <- prometheus.MustNewConstMetric(
+		ch <- mustNewConstMetric(
+			&ctx,
 			performanceSchemaEventsStatementsRowsAffectedDesc, prometheus.CounterValue, float64(rowsAffected),
 			schemaName, digest, digestText,
 		)
-		ch <- prometheus.MustNewConstMetric(
+		ch <- mustNewConstMetric(
+			&ctx,
 			performanceSchemaEventsStatementsRowsSentDesc, prometheus.CounterValue, float64(rowsSent),
 			schemaName, digest, digestText,
 		)
-		ch <- prometheus.MustNewConstMetric(
+		ch <- mustNewConstMetric(
+			&ctx,
 			performanceSchemaEventsStatementsRowsExaminedDesc, prometheus.CounterValue, float64(rowsExamined),
 			schemaName, digest, digestText,
 		)
-		ch <- prometheus.MustNewConstMetric(
+		ch <- mustNewConstMetric(
+			&ctx,
 			performanceSchemaEventsStatementsTmpTablesDesc, prometheus.CounterValue, float64(tmpTables),
 			schemaName, digest, digestText,
 		)
-		ch <- prometheus.MustNewConstMetric(
+		ch <- mustNewConstMetric(
+			&ctx,
 			performanceSchemaEventsStatementsTmpDiskTablesDesc, prometheus.CounterValue, float64(tmpDiskTables),
 			schemaName, digest, digestText,
 		)
-		ch <- prometheus.MustNewConstMetric(
+		ch <- mustNewConstMetric(
+			&ctx,
 			performanceSchemaEventsStatementsSortMergePassesDesc, prometheus.CounterValue, float64(sortMergePasses),
 			schemaName, digest, digestText,
 		)
-		ch <- prometheus.MustNewConstMetric(
+		ch <- mustNewConstMetric(
+			&ctx,
 			performanceSchemaEventsStatementsSortRowsDesc, prometheus.CounterValue, float64(sortRows),
 			schemaName, digest, digestText,
 		)
-		ch <- prometheus.MustNewConstMetric(
+		ch <- mustNewConstMetric(
+			&ctx,
 			performanceSchemaEventsStatementsNoIndexUsedDesc, prometheus.CounterValue, float64(noIndexUsed),
 			schemaName, digest, digestText,
 		)

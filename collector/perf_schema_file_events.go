@@ -34,18 +34,18 @@ const perfFileEventsQuery = `
 
 // Metric descriptors.
 var (
-	performanceSchemaFileEventsDesc = prometheus.NewDesc(
-		prometheus.BuildFQName(namespace, performanceSchema, "file_events_total"),
+	performanceSchemaFileEventsDesc = newDesc(
+		performanceSchema, "file_events_total",
 		"The total file events by event name/mode.",
 		[]string{"event_name", "mode"}, nil,
 	)
-	performanceSchemaFileEventsTimeDesc = prometheus.NewDesc(
-		prometheus.BuildFQName(namespace, performanceSchema, "file_events_seconds_total"),
+	performanceSchemaFileEventsTimeDesc = newDesc(
+		performanceSchema, "file_events_seconds_total",
 		"The total seconds of file events by event name/mode.",
 		[]string{"event_name", "mode"}, nil,
 	)
-	performanceSchemaFileEventsBytesDesc = prometheus.NewDesc(
-		prometheus.BuildFQName(namespace, performanceSchema, "file_events_bytes_total"),
+	performanceSchemaFileEventsBytesDesc = newDesc(
+		performanceSchema, "file_events_bytes_total",
 		"The total bytes of file events by event name/mode.",
 		[]string{"event_name", "mode"}, nil,
 	)
@@ -93,35 +93,43 @@ func (ScrapePerfFileEvents) Scrape(ctx context.Context, db *sql.DB, ch chan<- pr
 		); err != nil {
 			return err
 		}
-		ch <- prometheus.MustNewConstMetric(
+		ch <- mustNewConstMetric(
+			&ctx,
 			performanceSchemaFileEventsDesc, prometheus.CounterValue, float64(countRead),
 			eventName, "read",
 		)
-		ch <- prometheus.MustNewConstMetric(
+		ch <- mustNewConstMetric(
+			&ctx,
 			performanceSchemaFileEventsTimeDesc, prometheus.CounterValue, float64(timeRead)/picoSeconds,
 			eventName, "read",
 		)
-		ch <- prometheus.MustNewConstMetric(
+		ch <- mustNewConstMetric(
+			&ctx,
 			performanceSchemaFileEventsBytesDesc, prometheus.CounterValue, float64(bytesRead),
 			eventName, "read",
 		)
-		ch <- prometheus.MustNewConstMetric(
+		ch <- mustNewConstMetric(
+			&ctx,
 			performanceSchemaFileEventsDesc, prometheus.CounterValue, float64(countWrite),
 			eventName, "write",
 		)
-		ch <- prometheus.MustNewConstMetric(
+		ch <- mustNewConstMetric(
+			&ctx,
 			performanceSchemaFileEventsTimeDesc, prometheus.CounterValue, float64(timeWrite)/picoSeconds,
 			eventName, "write",
 		)
-		ch <- prometheus.MustNewConstMetric(
+		ch <- mustNewConstMetric(
+			&ctx,
 			performanceSchemaFileEventsBytesDesc, prometheus.CounterValue, float64(bytesWrite),
 			eventName, "write",
 		)
-		ch <- prometheus.MustNewConstMetric(
+		ch <- mustNewConstMetric(
+			&ctx,
 			performanceSchemaFileEventsDesc, prometheus.CounterValue, float64(countMisc),
 			eventName, "misc",
 		)
-		ch <- prometheus.MustNewConstMetric(
+		ch <- mustNewConstMetric(
+			&ctx,
 			performanceSchemaFileEventsTimeDesc, prometheus.CounterValue, float64(timeMisc)/picoSeconds,
 			eventName, "misc",
 		)

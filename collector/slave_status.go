@@ -119,9 +119,10 @@ func (ScrapeSlaveStatus) Scrape(ctx context.Context, db *sql.DB, ch chan<- prome
 
 		for i, col := range slaveCols {
 			if value, ok := parseStatus(*scanArgs[i].(*sql.RawBytes)); ok { // Silently skip unparsable values.
-				ch <- prometheus.MustNewConstMetric(
-					prometheus.NewDesc(
-						prometheus.BuildFQName(namespace, slaveStatus, strings.ToLower(col)),
+				ch <- mustNewConstMetric(
+					&ctx,
+					newDesc(
+						slaveStatus, strings.ToLower(col),
 						"Generic metric from SHOW SLAVE STATUS.",
 						[]string{"master_host", "master_uuid", "channel_name", "connection_name"},
 						nil,

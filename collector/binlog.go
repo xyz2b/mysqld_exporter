@@ -36,20 +36,20 @@ const (
 
 // Metric descriptors.
 var (
-	binlogSizeDesc = prometheus.NewDesc(
-		prometheus.BuildFQName(namespace, binlog, "size_bytes"),
+	binlogSizeDesc = newDesc(
+		binlog, "size_bytes",
 		"Combined size of all registered binlog files.",
-		[]string{}, nil,
+		nil, nil,
 	)
-	binlogFilesDesc = prometheus.NewDesc(
-		prometheus.BuildFQName(namespace, binlog, "files"),
+	binlogFilesDesc = newDesc(
+		binlog, "files",
 		"Number of registered binlog files.",
-		[]string{}, nil,
+		nil, nil,
 	)
-	binlogFileNumberDesc = prometheus.NewDesc(
-		prometheus.BuildFQName(namespace, binlog, "file_number"),
+	binlogFileNumberDesc = newDesc(
+		binlog, "file_number",
 		"The last binlog file number.",
-		[]string{}, nil,
+		nil, nil,
 	)
 )
 
@@ -123,16 +123,16 @@ func (ScrapeBinlogSize) Scrape(ctx context.Context, db *sql.DB, ch chan<- promet
 		count++
 	}
 
-	ch <- prometheus.MustNewConstMetric(
-		binlogSizeDesc, prometheus.GaugeValue, float64(size),
+	ch <- mustNewConstMetric(
+		&ctx, binlogSizeDesc, prometheus.GaugeValue, float64(size),
 	)
-	ch <- prometheus.MustNewConstMetric(
-		binlogFilesDesc, prometheus.GaugeValue, float64(count),
+	ch <- mustNewConstMetric(
+		&ctx, binlogFilesDesc, prometheus.GaugeValue, float64(count),
 	)
 	// The last row contains the last binlog file number.
 	value, _ := strconv.ParseFloat(strings.Split(filename, ".")[1], 64)
-	ch <- prometheus.MustNewConstMetric(
-		binlogFileNumberDesc, prometheus.GaugeValue, value,
+	ch <- mustNewConstMetric(
+		&ctx, binlogFileNumberDesc, prometheus.GaugeValue, value,
 	)
 
 	return nil
