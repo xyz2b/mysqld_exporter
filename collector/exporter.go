@@ -127,7 +127,7 @@ func (e *Exporter) Collect(ch chan<- prometheus.Metric) {
 }
 
 func (e *Exporter) scrape(ctx context.Context, ch chan<- prometheus.Metric) {
-	counterVecWithLabelValues(e.metrics.TotalScrapes).Inc()
+	counterVecWithLabelValues(&ctx, e.metrics.TotalScrapes).Inc()
 
 	var err error
 
@@ -135,7 +135,7 @@ func (e *Exporter) scrape(ctx context.Context, ch chan<- prometheus.Metric) {
 	db, err := sql.Open("mysql", e.dsn)
 	if err != nil {
 		level.Error(e.logger).Log("msg", "Error opening connection to database", "err", err)
-		gaugeVecWithLabelValues(e.metrics.Error).Set(1)
+		gaugeVecWithLabelValues(&ctx, e.metrics.Error).Set(1)
 		return
 	}
 	defer db.Close()
@@ -148,13 +148,13 @@ func (e *Exporter) scrape(ctx context.Context, ch chan<- prometheus.Metric) {
 
 	if err := db.PingContext(ctx); err != nil {
 		level.Error(e.logger).Log("msg", "Error pinging mysqld", "err", err)
-		gaugeVecWithLabelValues(e.metrics.MySQLUp).Set(0)
-		gaugeVecWithLabelValues(e.metrics.Error).Set(1)
+		gaugeVecWithLabelValues(&ctx, e.metrics.MySQLUp).Set(0)
+		gaugeVecWithLabelValues(&ctx, e.metrics.Error).Set(1)
 		return
 	}
 
-	gaugeVecWithLabelValues(e.metrics.MySQLUp).Set(1)
-	gaugeVecWithLabelValues(e.metrics.Error).Set(0)
+	gaugeVecWithLabelValues(&ctx, e.metrics.MySQLUp).Set(1)
+	gaugeVecWithLabelValues(&ctx, e.metrics.Error).Set(0)
 
 	ch <- mustNewConstMetric(&ctx, scrapeDurationDesc, prometheus.GaugeValue, time.Since(scrapeTime).Seconds(), "connection")
 
@@ -173,8 +173,8 @@ func (e *Exporter) scrape(ctx context.Context, ch chan<- prometheus.Metric) {
 			scrapeTime := time.Now()
 			if err := scraper.Scrape(ctx, db, ch, log.With(e.logger, "scraper", scraper.Name())); err != nil {
 				level.Error(e.logger).Log("msg", "Error from scraper", "scraper", scraper.Name(), "err", err)
-				counterVecWithLabelValues(e.metrics.ScrapeErrors, label).Inc()
-				gaugeVecWithLabelValues(e.metrics.Error).Set(1)
+				counterVecWithLabelValues(&ctx, e.metrics.ScrapeErrors, label).Inc()
+				gaugeVecWithLabelValues(&ctx, e.metrics.Error).Set(1)
 			}
 			ch <- mustNewConstMetric(&ctx, scrapeDurationDesc, prometheus.GaugeValue, time.Since(scrapeTime).Seconds(), label)
 		}(scraper)

@@ -40,28 +40,7 @@ var (
 	extraLabels = []string{"hostname", "subsystemName", "subsystemID"}
 )
 
-func counterVecWithLabelValues(v *prometheus.CounterVec, lvs ...string) prometheus.Counter {
-	if lvs != nil {
-		lvs = append(lvs, extraLabels...)
-	} else {
-		lvs = extraLabels
-	}
-
-	counter := v.WithLabelValues(lvs...)
-	return counter
-}
-
-func gaugeVecWithLabelValues(v *prometheus.GaugeVec, lvs ...string) prometheus.Gauge {
-	if lvs != nil {
-		lvs = append(lvs, extraLabels...)
-	} else {
-		lvs = extraLabels
-	}
-
-	counter := v.WithLabelValues(lvs...)
-	return counter
-}
-
+// 定义结构(Label)
 func newGaugeVec(opts prometheus.GaugeOpts, labelNames []string) *prometheus.GaugeVec {
 	if labelNames != nil {
 		labelNames = append(labelNames, extraLabels...)
@@ -95,6 +74,63 @@ func newDesc(subsystem, name, help string, labels []string, constLabels promethe
 		prometheus.BuildFQName(namespace, subsystem, name),
 		help, labels, constLabels,
 	)
+}
+
+// 插入记录(Value)
+func counterVecWithLabelValues(ctx *context.Context, v *prometheus.CounterVec, lvs ...string) prometheus.Counter {
+	subsystemID := ""
+	if id, ok := (*ctx).Value("subsystemID").(string); ok {
+		subsystemID = id
+	}
+	subsystemName := ""
+	if name, ok := (*ctx).Value("subsystemName").(string); ok {
+		subsystemName = name
+	}
+	hostname := ""
+	if n, ok := (*ctx).Value("hostname").(string); ok {
+		hostname = n
+	}
+
+	if lvs != nil {
+		extraLabels := []string{hostname, subsystemName, subsystemID}
+		lvs = append(lvs, extraLabels...)
+	} else {
+		lvs = []string{hostname, subsystemName, subsystemID}
+	}
+
+	counter := v.WithLabelValues(lvs...)
+	return counter
+}
+
+func gaugeVecWithLabelValues(ctx *context.Context, v *prometheus.GaugeVec, lvs ...string) prometheus.Gauge {
+	subsystemID := ""
+	if id, ok := (*ctx).Value("subsystemID").(string); ok {
+		subsystemID = id
+	}
+	subsystemName := ""
+	if name, ok := (*ctx).Value("subsystemName").(string); ok {
+		subsystemName = name
+	}
+	hostname := ""
+	if n, ok := (*ctx).Value("hostname").(string); ok {
+		hostname = n
+	}
+
+	if lvs != nil {
+		extraLabels := []string{hostname, subsystemName, subsystemID}
+		lvs = append(lvs, extraLabels...)
+	} else {
+		lvs = []string{hostname, subsystemName, subsystemID}
+	}
+
+	if lvs != nil {
+		lvs = append(lvs, extraLabels...)
+	} else {
+		lvs = extraLabels
+	}
+
+	counter := v.WithLabelValues(lvs...)
+	return counter
 }
 
 func mustNewConstHistogram(
