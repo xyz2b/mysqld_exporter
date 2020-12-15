@@ -91,11 +91,12 @@ func counterVecWithLabelValues(ctx *context.Context, v *prometheus.CounterVec, l
 		hostname = n
 	}
 
+	extraLabelsValue := []string{hostname, subsystemName, subsystemID}
+
 	if lvs != nil {
-		extraLabels := []string{hostname, subsystemName, subsystemID}
-		lvs = append(lvs, extraLabels...)
+		lvs = append(lvs, extraLabelsValue...)
 	} else {
-		lvs = []string{hostname, subsystemName, subsystemID}
+		lvs = extraLabelsValue
 	}
 
 	counter := v.WithLabelValues(lvs...)
@@ -116,17 +117,12 @@ func gaugeVecWithLabelValues(ctx *context.Context, v *prometheus.GaugeVec, lvs .
 		hostname = n
 	}
 
-	if lvs != nil {
-		extraLabels := []string{hostname, subsystemName, subsystemID}
-		lvs = append(lvs, extraLabels...)
-	} else {
-		lvs = []string{hostname, subsystemName, subsystemID}
-	}
+	extraLabelsValue := []string{hostname, subsystemName, subsystemID}
 
 	if lvs != nil {
-		lvs = append(lvs, extraLabels...)
+		lvs = append(lvs, extraLabelsValue...)
 	} else {
-		lvs = extraLabels
+		lvs = extraLabelsValue
 	}
 
 	counter := v.WithLabelValues(lvs...)
@@ -154,11 +150,12 @@ func mustNewConstHistogram(
 		hostname = n
 	}
 
+	extraLabelsValue := []string{hostname, subsystemName, subsystemID}
+
 	if labelValues != nil {
-		extraLabels := []string{hostname, subsystemName, subsystemID}
-		labelValues = append(labelValues, extraLabels...)
+		labelValues = append(labelValues, extraLabelsValue...)
 	} else {
-		labelValues = []string{hostname, subsystemName, subsystemID}
+		labelValues = extraLabelsValue
 	}
 
 	metric := prometheus.MustNewConstHistogram(
@@ -181,11 +178,12 @@ func mustNewConstMetric(ctx *context.Context, desc *prometheus.Desc, valueType p
 		hostname = n
 	}
 
+	extraLabelsValue := []string{hostname, subsystemName, subsystemID}
+
 	if labelValues != nil {
-		extraLabels := []string{hostname, subsystemName, subsystemID}
-		labelValues = append(labelValues, extraLabels...)
+		labelValues = append(labelValues, extraLabelsValue...)
 	} else {
-		labelValues = []string{hostname, subsystemName, subsystemID}
+		labelValues = extraLabelsValue
 	}
 
 	metric := prometheus.MustNewConstMetric(desc, valueType, value, labelValues...)
